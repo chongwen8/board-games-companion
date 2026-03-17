@@ -20,9 +20,13 @@
 # production
 /build
 
+# partykit
+/.partykit/
+
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -30,8 +34,18 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.*
+!.env.example
+
+# credentials & secrets
+*.key
+*.p12
+*.crt
+credentials.json
+service-account*.json
+firebase-adminsdk*.json
 
 # vercel
 .vercel
@@ -39,3 +53,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor
+.vscode/settings.json
+.idea/
+
+# claude
+.claude/

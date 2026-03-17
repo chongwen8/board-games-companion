@@ -1,0 +1,9 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "boardgames",
+  "main": "party/brass-birmingham.ts",
+  "parties": {
+    "lobby": "party/lobby.ts"
+  },
+  "compatibilityDate": "2024-01-01"
+}
