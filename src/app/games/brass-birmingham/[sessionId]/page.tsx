@@ -395,6 +395,15 @@ function SessionContent() {
           {t.game.settingUp}
         </p>
       )}
+
+      {/* Exit lobby */}
+      <button
+        onClick={handleExit}
+        className="flex w-full items-center justify-center gap-1.5 pt-2 text-xs text-muted-foreground active:text-foreground"
+      >
+        <LogOut className="h-3 w-3" />
+        {isHost ? "End Session & Exit" : "Leave Session"}
+      </button>
     </div>
   );
 }
