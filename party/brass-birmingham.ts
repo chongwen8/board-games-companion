@@ -21,11 +21,13 @@ function createInitialPlayerState(playerCount: number): {
   vp: number;
   loans: number;
   industryStacks: Record<IndustryType, TileStatus[]>;
+  lockedTiles: Record<IndustryType, boolean[]>;
 } {
   const stacks = {} as Record<IndustryType, TileStatus[]>;
+  const locked = {} as Record<IndustryType, boolean[]>;
   for (const [industry, tileLevels] of Object.entries(INDUSTRY_TILE_LEVELS)) {
-    // One "available" entry per tile (array length = actual tile count)
     stacks[industry as IndustryType] = tileLevels.map(() => "available" as TileStatus);
+    locked[industry as IndustryType] = tileLevels.map(() => false);
   }
   return {
     money: STARTING_MONEY[playerCount] ?? 30,
@@ -33,6 +35,7 @@ function createInitialPlayerState(playerCount: number): {
     vp: 0,
     loans: 0,
     industryStacks: stacks,
+    lockedTiles: locked,
   };
 }
 

@@ -113,19 +113,37 @@ export function brassReducer(
           }
         }
 
-        // 2. Recalculate turn order based on spending
+        // 2. Lock all built/developed tiles — they become permanent
+        for (const pid of draft.turnOrder) {
+          const ps = draft.playerStates[pid];
+          if (!ps) continue;
+          if (!ps.lockedTiles) ps.lockedTiles = {} as typeof ps.lockedTiles;
+          for (const [industry, stack] of Object.entries(ps.industryStacks)) {
+            if (!ps.lockedTiles[industry as IndustryType]) {
+              ps.lockedTiles[industry as IndustryType] = stack.map(() => false);
+            }
+            const locks = ps.lockedTiles[industry as IndustryType];
+            for (let i = 0; i < stack.length; i++) {
+              if (stack[i] === "built" || stack[i] === "developed") {
+                locks[i] = true;
+              }
+            }
+          }
+        }
+
+        // 3. Recalculate turn order based on spending
         const newOrder = calculateTurnOrder(
           draft.roundSpending,
           draft.turnOrder
         );
         draft.turnOrder = newOrder;
 
-        // 3. Reset spending for next round
+        // 4. Reset spending for next round
         for (const pid of draft.turnOrder) {
           draft.roundSpending[pid] = 0;
         }
 
-        // 4. Advance round
+        // 5. Advance round
         draft.round += 1;
         draft.activePlayerIndex = 0;
         draft.actionsRemainingForActivePlayer = getActionsForRound(draft.round);
@@ -142,17 +160,21 @@ export function brassReducer(
         for (const pid of draft.turnOrder) {
           draft.roundSpending[pid] = 0;
         }
-        // Era transition: Level I built tiles are removed from the board.
-        // Mark them back as "available" on the player mat.
+        // Era transition: Lock all built/developed tiles (they're permanent).
+        // Level 1 available tiles can still be developed but not built
+        // (canBuildInEra already handles the build restriction).
         for (const pid of draft.turnOrder) {
           const ps = draft.playerStates[pid];
           if (!ps) continue;
+          if (!ps.lockedTiles) ps.lockedTiles = {} as typeof ps.lockedTiles;
           for (const [industry, stack] of Object.entries(ps.industryStacks)) {
-            const levels = INDUSTRY_TILE_LEVELS[industry];
-            if (!levels) continue;
+            if (!ps.lockedTiles[industry as IndustryType]) {
+              ps.lockedTiles[industry as IndustryType] = stack.map(() => false);
+            }
+            const locks = ps.lockedTiles[industry as IndustryType];
             for (let i = 0; i < stack.length; i++) {
-              if (levels[i] === 1 && stack[i] === "built") {
-                stack[i] = "available";
+              if (stack[i] === "built" || stack[i] === "developed") {
+                locks[i] = true;
               }
             }
           }
@@ -221,13 +243,15 @@ export function brassReducer(
         const ps = draft.playerStates[action.playerId];
         if (ps) {
           const stack = ps.industryStacks[action.industry];
+          const locked = ps.lockedTiles?.[action.industry];
           if (stack && action.index >= 0 && action.index < stack.length) {
+            // Tiles locked from previous rounds cannot be changed
+            if (locked?.[action.index]) break;
             const current = stack[action.index];
             const developable = canDevelopTile(action.industry, action.index);
             if (current === "available") {
               stack[action.index] = "built";
             } else if (current === "built") {
-              // Only cycle to "developed" if this specific tile is developable
               stack[action.index] = developable ? "developed" : "available";
             } else if (current === "developed") {
               stack[action.index] = "available";

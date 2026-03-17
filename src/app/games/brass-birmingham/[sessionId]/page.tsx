@@ -188,8 +188,9 @@ function SessionContent() {
     if (isHost) {
       // Admin exit ends the session for everyone
       send({ type: "END_SESSION" });
+      clearActiveSession();
     }
-    clearActiveSession();
+    // Non-admin: keep activeSession in localStorage so rejoin banner shows on lobby
     useBrassSessionStore.getState().reset();
     router.push("/games/brass-birmingham");
   };

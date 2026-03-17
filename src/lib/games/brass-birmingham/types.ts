@@ -18,6 +18,7 @@ export interface BrassPlayerState {
   vp: number;
   loans: number;
   industryStacks: Record<IndustryType, TileStatus[]>;
+  lockedTiles: Record<IndustryType, boolean[]>; // true = permanent from previous round
 }
 
 export interface ActionHistoryEntry {

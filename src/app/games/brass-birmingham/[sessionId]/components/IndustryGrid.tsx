@@ -176,6 +176,7 @@ export function IndustryGrid({
                     <TileTrack
                       groups={groups}
                       stack={myStack}
+                      locked={gameState.playerStates[playerId]?.lockedTiles?.[industry]}
                       industry={industry}
                       era={gameState.era}
                       onCycle={(idx) => handleCycle(playerId, industry, idx)}
@@ -244,6 +245,7 @@ export function IndustryGrid({
 function TileTrack({
   groups,
   stack,
+  locked,
   industry,
   era,
   onCycle,
@@ -251,6 +253,7 @@ function TileTrack({
 }: {
   groups: { level: number; startIdx: number; count: number }[];
   stack: TileStatus[];
+  locked?: boolean[];
   industry: string;
   era: Era;
   onCycle?: (index: number) => void;
@@ -285,28 +288,33 @@ function TileTrack({
                 // Available tile that can't be built in current era
                 const cantBuild = !buildable && status === "available";
 
+                // Tile locked from a previous round (permanent)
+                const isLockedFromPrevRound = locked?.[idx] === true;
+
                 return (
                   <button
                     key={idx}
-                    disabled={readonly || isLocked}
+                    disabled={readonly || isLocked || isLockedFromPrevRound}
                     onClick={() => onCycle?.(idx)}
                     title={
-                      isLocked
-                        ? "Complete earlier tiles first"
-                        : cantBuild
-                          ? `Can't build in ${era === "canal" ? "Canal" : "Rail"} Era`
-                          : status === "available"
-                            ? "Tap: mark as built"
-                            : status === "built" && !developable
-                              ? "Tap: reset (can't develop)"
-                              : status === "built"
-                                ? "Tap: mark as developed"
-                                : "Tap: reset"
+                      isLockedFromPrevRound
+                        ? "Locked from previous round"
+                        : isLocked
+                          ? "Complete earlier tiles first"
+                          : cantBuild
+                            ? `Can't build in ${era === "canal" ? "Canal" : "Rail"} Era`
+                            : status === "available"
+                              ? "Tap: mark as built"
+                              : status === "built" && !developable
+                                ? "Tap: reset (can't develop)"
+                                : status === "built"
+                                  ? "Tap: mark as developed"
+                                  : "Tap: reset"
                     }
                     className={`
                       flex items-center justify-center rounded-md text-xs font-semibold transition-all
                       ${readonly ? "h-6 w-6 text-[10px]" : "h-8 w-8"}
-                      ${readonly || isLocked ? "cursor-default" : "active:scale-90"}
+                      ${readonly || isLocked || isLockedFromPrevRound ? "cursor-default" : "active:scale-90"}
                       ${isLocked && !readonly ? "opacity-20" : ""}
                       ${
                         status === "built"
