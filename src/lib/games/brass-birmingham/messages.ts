@@ -8,6 +8,8 @@ export type ClientMessage =
   | { type: "ADD_BOT" }
   | { type: "REMOVE_BOT"; botId: string }
   | { type: "START_GAME"; playerCount: number }
+  | { type: "RESET_GAME" }
+  | { type: "END_SESSION" }
   | { type: "GAME_ACTION"; action: BrassAction };
 
 /** Messages from PartyKit server → client */
@@ -15,4 +17,5 @@ export type ServerMessage =
   | { type: "SESSION_CREATED"; session: Session }
   | { type: "SESSION_UPDATED"; session: Session }
   | { type: "GAME_STATE"; gameState: BrassGameState }
+  | { type: "SESSION_ENDED" }
   | { type: "ERROR"; message: string };

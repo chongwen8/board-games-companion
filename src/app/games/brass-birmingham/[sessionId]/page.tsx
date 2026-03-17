@@ -11,7 +11,8 @@ import type { BrassGameState } from "@/lib/games/brass-birmingham/types";
 import type { ClientMessage } from "@/lib/games/brass-birmingham/messages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, LogOut, RotateCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { BottomNav, type TabId } from "./components/BottomNav";
 import { Dashboard } from "./components/Dashboard";
 import { IndustryGrid } from "./components/IndustryGrid";
@@ -19,6 +20,7 @@ import { GameSummary } from "./components/GameSummary";
 import { GuideTab } from "./components/GuideTab";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { saveSession, loadSession } from "@/lib/firestore";
+import { saveActiveSession, clearActiveSession } from "@/lib/utils/active-session";
 import { FEATURES } from "@/lib/config";
 import { useI18n } from "@/lib/i18n";
 
@@ -34,6 +36,7 @@ const COLOR_CLASSES: Record<string, string> = {
 
 function SessionContent() {
   const { t } = useI18n();
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const sessionId = params.sessionId as string;
@@ -112,12 +115,31 @@ function SessionContent() {
 
   const handleError = useCallback((msg: string) => setError(msg), []);
 
+  const handleSessionEnded = useCallback(() => {
+    clearActiveSession();
+    useBrassSessionStore.getState().reset();
+    router.push("/games/brass-birmingham");
+  }, [router]);
+
   const { send, connected } = usePartySocket({
     roomId: sessionId,
     onSession: handleSession,
     onGameState: handleGameState,
     onError: handleError,
+    onSessionEnded: handleSessionEnded,
   });
+
+  // Save active session to localStorage for reconnect
+  useEffect(() => {
+    if (connected && sessionId) {
+      saveActiveSession({
+        sessionId,
+        gameSlug: "brass-birmingham",
+        playerName,
+        joinedAt: Date.now(),
+      });
+    }
+  }, [connected, sessionId, playerName]);
 
   const sendMessage = useCallback(
     (msg: ClientMessage) => send(msg),
@@ -151,11 +173,46 @@ function SessionContent() {
 
   const isHost = session?.hostPlayerId === playerId;
 
+  const handleExit = () => {
+    if (isHost) {
+      // Admin exit ends the session for everyone
+      send({ type: "END_SESSION" });
+    }
+    clearActiveSession();
+    useBrassSessionStore.getState().reset();
+    router.push("/games/brass-birmingham");
+  };
+
+  const handleRestart = () => {
+    send({ type: "RESET_GAME" });
+  };
+
   // --- Game Over View ---
   if (session?.status === "active" && gameState?.phase === "game-over") {
     return (
-      <div className="mx-auto w-full max-w-lg px-4 py-8">
+      <div className="mx-auto w-full max-w-lg px-4 py-8 space-y-6">
         <GameSummary session={session} gameState={gameState} />
+        <div className="space-y-2">
+          {isHost && (
+            <Button
+              onClick={handleRestart}
+              className="w-full rounded-xl"
+              size="lg"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              New Game (Same Players)
+            </Button>
+          )}
+          <Button
+            onClick={handleExit}
+            variant="outline"
+            className="w-full rounded-xl"
+            size="lg"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Exit to Lobby
+          </Button>
+        </div>
       </div>
     );
   }
@@ -182,6 +239,13 @@ function SessionContent() {
                 </Badge>
               )}
               <LanguageSwitcher />
+              <button
+                onClick={handleExit}
+                className="rounded-lg p-1.5 text-muted-foreground active:bg-muted active:text-foreground"
+                title="Exit to lobby"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>

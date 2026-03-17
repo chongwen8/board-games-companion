@@ -14,6 +14,7 @@ interface UsePartySocketOptions {
   onSession?: (session: Session) => void;
   onGameState?: (gameState: BrassGameState) => void;
   onError?: (message: string) => void;
+  onSessionEnded?: () => void;
   onConnectionChange?: (connected: boolean) => void;
 }
 
@@ -22,21 +23,23 @@ export function usePartySocket({
   onSession,
   onGameState,
   onError,
+  onSessionEnded,
   onConnectionChange,
 }: UsePartySocketOptions) {
   const socketRef = useRef<PartySocket | null>(null);
   const [connected, setConnected] = useState(false);
 
-  // Keep latest callbacks in refs to avoid reconnection on callback changes
   const onSessionRef = useRef(onSession);
   const onGameStateRef = useRef(onGameState);
   const onErrorRef = useRef(onError);
+  const onSessionEndedRef = useRef(onSessionEnded);
   const onConnectionChangeRef = useRef(onConnectionChange);
 
   useEffect(() => {
     onSessionRef.current = onSession;
     onGameStateRef.current = onGameState;
     onErrorRef.current = onError;
+    onSessionEndedRef.current = onSessionEnded;
     onConnectionChangeRef.current = onConnectionChange;
   });
 
@@ -65,6 +68,9 @@ export function usePartySocket({
           break;
         case "GAME_STATE":
           onGameStateRef.current?.(msg.gameState);
+          break;
+        case "SESSION_ENDED":
+          onSessionEndedRef.current?.();
           break;
         case "ERROR":
           onErrorRef.current?.(msg.message);

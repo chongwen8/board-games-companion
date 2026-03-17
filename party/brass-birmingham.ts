@@ -195,12 +195,18 @@ export default class BrassBirminghamServer implements Party.Server {
 
       case "START_GAME": {
         if (!this.session) return;
-        if (sender.id !== this.session.hostPlayerId) {
-          // Only host can start — but in MVP we use connection IDs loosely
-        }
+        // Only the session creator (admin) can start the game
+        // sender.id is the WebSocket connection ID, not playerId,
+        // so we trust the client-side isHost check for now.
         this.session.status = "active";
         const playerCount = this.session.players.length;
+
+        // Shuffle player order randomly for the first round
         const playerIds = this.session.players.map((p) => p.id);
+        for (let i = playerIds.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [playerIds[i], playerIds[j]] = [playerIds[j], playerIds[i]];
+        }
 
         const playerStates: Record<string, ReturnType<typeof createInitialPlayerState>> = {};
         for (const pid of playerIds) {
@@ -237,6 +243,32 @@ export default class BrassBirminghamServer implements Party.Server {
             gameState: this.gameState,
           } satisfies ServerMessage)
         );
+        break;
+      }
+
+      case "RESET_GAME": {
+        if (!this.session) return;
+        // Reset session back to lobby, clear game state
+        this.session.status = "lobby";
+        this.gameState = null;
+        this.broadcast(
+          JSON.stringify({
+            type: "SESSION_UPDATED",
+            session: this.session,
+          } satisfies ServerMessage)
+        );
+        break;
+      }
+
+      case "END_SESSION": {
+        if (!this.session) return;
+        // Admin ends session — notify all clients
+        this.session.status = "finished";
+        this.gameState = null;
+        this.broadcast(
+          JSON.stringify({ type: "SESSION_ENDED" } satisfies ServerMessage)
+        );
+        this.session = null;
         break;
       }
 

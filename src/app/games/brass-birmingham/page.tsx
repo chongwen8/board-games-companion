@@ -11,8 +11,9 @@ import {
   setPlayerName,
 } from "@/lib/utils/player-id";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { LogOut } from "lucide-react";
+import { LogOut, ArrowRight } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { getActiveSession, clearActiveSession } from "@/lib/utils/active-session";
 import { useI18n } from "@/lib/i18n";
 
 export default function BrassLobbyPage() {
@@ -24,6 +25,7 @@ export default function BrassLobbyPage() {
   });
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState("");
+  const [activeSession] = useState(() => getActiveSession());
 
   const effectiveName = user?.displayName && !name ? user.displayName : name;
 
@@ -91,6 +93,38 @@ export default function BrassLobbyPage() {
       <p className="mb-8 text-sm text-muted-foreground">{t.game.subtitle}</p>
 
       <div className="w-full max-w-sm space-y-6">
+        {/* Rejoin active session */}
+        {activeSession && (
+          <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 space-y-3">
+            <p className="text-sm font-medium">You have an active session</p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() =>
+                  router.push(
+                    `/games/brass-birmingham/${activeSession.sessionId}?action=join&name=${encodeURIComponent(activeSession.playerName)}`
+                  )
+                }
+                size="sm"
+                className="flex-1 rounded-lg"
+              >
+                <ArrowRight className="mr-1.5 h-3.5 w-3.5" />
+                Rejoin
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg"
+                onClick={() => {
+                  clearActiveSession();
+                  window.location.reload();
+                }}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Auth status */}
         {user && (
           <div className="flex items-center justify-between rounded-xl bg-card/50 px-3 py-2">
