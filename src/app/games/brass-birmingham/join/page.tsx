@@ -4,8 +4,8 @@ import { Suspense, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PartySocket from "partysocket";
 
-const PARTYKIT_HOST =
-  process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+const RAW_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 function JoinContent() {
   const searchParams = useSearchParams();

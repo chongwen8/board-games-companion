@@ -5,7 +5,7 @@ export interface Translations {
   game: {
     title: string; subtitle: string; canalEra: string; railEra: string;
     round: string; actionsLeft: (n: number) => string;
-    reconnecting: string; connecting: string; loadingSession: string; settingUp: string;
+    reconnecting: string; connecting: string; connectionFailed: string; loadingSession: string; settingUp: string;
   };
   lobby: {
     sessionCode: string; shareCode: string; players: string; host: string;
@@ -105,6 +105,7 @@ const en: Translations = {
     actionsLeft: (n: number) => `${n} action${n !== 1 ? "s" : ""} left`,
     reconnecting: "Reconnecting...",
     connecting: "Connecting...",
+    connectionFailed: "Unable to connect to game server. Check your connection and try again.",
     loadingSession: "Loading session...",
     settingUp: "Setting up session...",
   },

@@ -6,8 +6,9 @@ import type { ServerMessage, ClientMessage } from "@/lib/games/brass-birmingham/
 import type { BrassGameState } from "@/lib/games/brass-birmingham/types";
 import type { Session } from "@/lib/games/types";
 
-const PARTYKIT_HOST =
-  process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+const RAW_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+// PartySocket expects hostname only — strip any protocol prefix
+const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 interface UsePartySocketOptions {
   roomId: string;

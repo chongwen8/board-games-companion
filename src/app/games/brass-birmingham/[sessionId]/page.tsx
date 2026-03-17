@@ -24,8 +24,8 @@ import { saveActiveSession, clearActiveSession } from "@/lib/utils/active-sessio
 import { FEATURES } from "@/lib/config";
 import { useI18n } from "@/lib/i18n";
 
-const PARTYKIT_HOST =
-  process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+const RAW_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
+const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 const COLOR_CLASSES: Record<string, string> = {
   red: "bg-red-500",
@@ -128,6 +128,17 @@ function SessionContent() {
     onError: handleError,
     onSessionEnded: handleSessionEnded,
   });
+
+  // Connection timeout — if not connected after 8s, show error
+  useEffect(() => {
+    if (connected) return;
+    const timer = setTimeout(() => {
+      if (!useBrassSessionStore.getState().session) {
+        setError(t.game.connectionFailed);
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [connected, t]);
 
   // Save active session to localStorage for reconnect
   useEffect(() => {
@@ -302,7 +313,20 @@ function SessionContent() {
       </div>
 
       {error && (
-        <p className="text-center text-sm text-destructive">{error}</p>
+        <div className="space-y-4 text-center">
+          <p className="text-sm text-destructive">{error}</p>
+          <Button
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => {
+              clearActiveSession();
+              useBrassSessionStore.getState().reset();
+              router.push("/games/brass-birmingham");
+            }}
+          >
+            {t.endOfRound.back} {/* "Back" */}
+          </Button>
+        </div>
       )}
 
       {session && (

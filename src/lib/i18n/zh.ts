@@ -21,6 +21,7 @@ const zh: Translations = {
     actionsLeft: (n: number) => `\u5269\u4F59 ${n} \u6B21\u884C\u52A8`,
     reconnecting: "\u91CD\u65B0\u8FDE\u63A5\u4E2D...",
     connecting: "\u8FDE\u63A5\u4E2D...",
+    connectionFailed: "\u65E0\u6CD5\u8FDE\u63A5\u6E38\u620F\u670D\u52A1\u5668\u3002\u8BF7\u68C0\u67E5\u7F51\u7EDC\u8FDE\u63A5\u540E\u91CD\u8BD5\u3002",
     loadingSession: "\u52A0\u8F7D\u4E2D...",
     settingUp: "\u521B\u5EFA\u4F1A\u8BDD\u4E2D...",
   },
