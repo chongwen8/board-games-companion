@@ -68,13 +68,13 @@ export function brassReducer(
     switch (action.type) {
       case "RECORD_SPEND": {
         const ps = draft.playerStates[action.playerId];
-        // Block spending if player has no money
-        if (ps && ps.money <= 0) break;
+        if (!ps || ps.money <= 0) break;
+        // Cap spend to available money so it never goes negative
+        const spendAmount = Math.min(action.amount, ps.money);
+        if (spendAmount <= 0) break;
         const current = draft.roundSpending[action.playerId] ?? 0;
-        draft.roundSpending[action.playerId] = current + action.amount;
-        if (ps) {
-          ps.money -= action.amount;
-        }
+        draft.roundSpending[action.playerId] = current + spendAmount;
+        ps.money -= spendAmount;
         break;
       }
 
