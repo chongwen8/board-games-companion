@@ -3,8 +3,10 @@ import { calculateTurnOrder, getActionsForRound, getIncomePayout } from "./logic
 import {
   INDUSTRY_TILE_LEVELS,
   LOAN_AMOUNT,
+  LOAN_INCOME_LEVEL_PENALTY,
   applyLoanToSpace,
   canDevelopTile,
+  spaceToIncome,
 } from "./constants";
 import type {
   BrassAction,
@@ -65,9 +67,11 @@ export function brassReducer(
 
     switch (action.type) {
       case "RECORD_SPEND": {
+        const ps = draft.playerStates[action.playerId];
+        // Block spending if player has no money
+        if (ps && ps.money <= 0) break;
         const current = draft.roundSpending[action.playerId] ?? 0;
         draft.roundSpending[action.playerId] = current + action.amount;
-        const ps = draft.playerStates[action.playerId];
         if (ps) {
           ps.money -= action.amount;
         }
@@ -185,6 +189,10 @@ export function brassReducer(
       case "TAKE_LOAN": {
         const ps = draft.playerStates[action.playerId];
         if (ps) {
+          // Cannot take loan if income after penalty would drop below -10
+          // e.g. at income level -8, loan would push to -11 → blocked
+          const currentLevel = spaceToIncome(ps.income);
+          if (currentLevel - LOAN_INCOME_LEVEL_PENALTY < -10) break;
           ps.money += LOAN_AMOUNT;
           ps.income = applyLoanToSpace(ps.income); // drops 3 income levels
           ps.loans += 1;
@@ -212,6 +220,8 @@ export function brassReducer(
       case "ADJUST_MONEY": {
         const ps = draft.playerStates[action.playerId];
         if (ps) {
+          // Prevent money going below 0 via the minus button
+          if (action.delta < 0 && ps.money <= 0) break;
           ps.money += action.delta;
         }
         break;

@@ -4,6 +4,7 @@ import type { BrassGameState } from "@/lib/games/brass-birmingham/types";
 import type { ClientMessage } from "@/lib/games/brass-birmingham/messages";
 import type { Player } from "@/lib/games/types";
 import { getIncomePayout } from "@/lib/games/brass-birmingham/logic";
+import { spaceToIncome, LOAN_INCOME_LEVEL_PENALTY } from "@/lib/games/brass-birmingham/constants";
 import { useI18n } from "@/lib/i18n";
 
 const COLOR_BAR: Record<string, string> = {
@@ -41,6 +42,9 @@ export function PlayerCardFull({
 
   const spent = gameState.roundSpending[player.id] ?? 0;
   const payout = getIncomePayout(ps.income);
+  const moneyEmpty = ps.money <= 0;
+  // Loan blocked if income after -3 levels would drop below -10 (e.g. at -8 or lower)
+  const loanBlocked = spaceToIncome(ps.income) - LOAN_INCOME_LEVEL_PENALTY < -10;
 
   const pid = player.id;
   const adjustMoney = (d: number) =>
@@ -73,16 +77,16 @@ export function PlayerCardFull({
       <div className="bg-card/40">
         {/* Money */}
         <Row label={t.playerCard.money} value={ps.money}>
-          <button onClick={() => adjustMoney(-1)} className={`${btnBase} w-12 rounded-l-lg bg-muted/30`}>−</button>
+          <button onClick={() => adjustMoney(-1)} disabled={moneyEmpty} className={`${btnBase} w-12 rounded-l-lg bg-muted/30`}>−</button>
           <button onClick={() => adjustMoney(1)} className={`${btnBase} w-12 border-l-0 bg-muted/50`}>+</button>
-          <button onClick={takeLoan} className={`${btnBase} w-14 rounded-r-lg border-l-0 bg-muted/30 text-xs`}>{t.playerCard.loan}</button>
+          <button onClick={takeLoan} disabled={loanBlocked} className={`${btnBase} w-14 rounded-r-lg border-l-0 bg-muted/30 text-xs`}>{t.playerCard.loan}</button>
         </Row>
 
         {/* Spent */}
         <Row label={t.playerCard.spent} value={spent} border>
           <button onClick={() => adjustSpend(spent - 1)} disabled={spent <= 0} className={`${btnBase} w-12 rounded-l-lg bg-muted/30`}>−</button>
-          <button onClick={() => recordSpend(1)} className={`${btnBase} w-12 border-l-0 bg-muted/50`}>+</button>
-          <button onClick={() => recordSpend(5)} className={`${btnBase} w-14 rounded-r-lg border-l-0 bg-muted/30 text-xs`}>+5</button>
+          <button onClick={() => recordSpend(1)} disabled={moneyEmpty} className={`${btnBase} w-12 border-l-0 bg-muted/50`}>+</button>
+          <button onClick={() => recordSpend(5)} disabled={moneyEmpty} className={`${btnBase} w-14 rounded-r-lg border-l-0 bg-muted/30 text-xs`}>+5</button>
         </Row>
 
         {/* Income */}
