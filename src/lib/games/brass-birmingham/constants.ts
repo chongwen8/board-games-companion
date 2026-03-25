@@ -14,11 +14,11 @@ export const ROUNDS_PER_ERA: Record<number, number> = {
   4: 8,
 };
 
-/** Starting money per player count. */
+/** Starting money per player count (official rules: £17). */
 export const STARTING_MONEY: Record<number, number> = {
-  2: 30,
-  3: 30,
-  4: 30,
+  2: 17,
+  3: 17,
+  4: 17,
 };
 
 /**

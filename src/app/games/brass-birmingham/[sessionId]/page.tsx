@@ -185,12 +185,15 @@ function SessionContent() {
   const isHost = session?.hostPlayerId === playerId;
 
   const handleExit = () => {
-    if (isHost) {
-      // Admin exit ends the session for everyone
+    // During an active game, just navigate away — don't kill the session.
+    // The WebSocket will close and onClose marks the player disconnected.
+    // They can rejoin via the session code or active session banner.
+    if (isHost && session?.status === "lobby") {
+      // Only destroy session if host leaves from lobby (game hasn't started)
       send({ type: "END_SESSION" });
       clearActiveSession();
     }
-    // Non-admin: keep activeSession in localStorage so rejoin banner shows on lobby
+    // Keep activeSession in localStorage so rejoin banner shows on lobby
     useBrassSessionStore.getState().reset();
     router.push("/games/brass-birmingham");
   };

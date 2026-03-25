@@ -3,7 +3,7 @@ import type * as Party from "partykit/server";
 /**
  * Lobby room: maps 4-letter session codes to room IDs.
  * There's exactly one lobby room (ID: "main").
- * Clients send REGISTER_CODE or LOOKUP_CODE messages.
+ * Uses room.storage for durable persistence across hibernation.
  */
 
 type LobbyClientMessage =
@@ -15,20 +15,18 @@ type LobbyServerMessage =
   | { type: "CODE_NOT_FOUND"; code: string };
 
 export default class LobbyServer implements Party.Server {
-  codeToRoom: Map<string, string> = new Map();
-
   constructor(readonly room: Party.Room) {}
 
-  onMessage(message: string, sender: Party.Connection) {
+  async onMessage(message: string, sender: Party.Connection) {
     const msg = JSON.parse(message) as LobbyClientMessage;
 
     switch (msg.type) {
       case "REGISTER_CODE": {
-        this.codeToRoom.set(msg.code, msg.roomId);
+        await this.room.storage.put(`code:${msg.code}`, msg.roomId);
         break;
       }
       case "LOOKUP_CODE": {
-        const roomId = this.codeToRoom.get(msg.code);
+        const roomId = await this.room.storage.get<string>(`code:${msg.code}`);
         if (roomId) {
           sender.send(
             JSON.stringify({

@@ -30,7 +30,7 @@ function createInitialPlayerState(playerCount: number): {
     locked[industry as IndustryType] = tileLevels.map(() => false);
   }
   return {
-    money: STARTING_MONEY[playerCount] ?? 30,
+    money: STARTING_MONEY[playerCount] ?? 17,
     income: STARTING_INCOME_SPACE,
     vp: 0,
     loans: 0,
@@ -45,7 +45,35 @@ export default class BrassBirminghamServer implements Party.Server {
 
   constructor(readonly room: Party.Room) {}
 
-  onConnect(conn: Party.Connection) {
+  /** Restore state from durable storage on first connect after hibernation. */
+  private async rehydrate() {
+    if (this.session) return; // already loaded
+    const stored = await this.room.storage.get<{
+      session: Session;
+      gameState: BrassGameState | null;
+    }>("state");
+    if (stored) {
+      this.session = stored.session;
+      this.gameState = stored.gameState;
+    }
+  }
+
+  /** Persist current state to durable storage. */
+  private async persist() {
+    if (this.session) {
+      await this.room.storage.put("state", {
+        session: this.session,
+        gameState: this.gameState,
+      });
+    } else {
+      await this.room.storage.delete("state");
+    }
+  }
+
+  async onConnect(conn: Party.Connection) {
+    // Rehydrate from storage if server was hibernated
+    await this.rehydrate();
+
     // Send current state to newly connected/reconnected client
     if (this.session) {
       conn.send(
@@ -65,11 +93,48 @@ export default class BrassBirminghamServer implements Party.Server {
     }
   }
 
-  onMessage(message: string, sender: Party.Connection) {
+  async onMessage(message: string, sender: Party.Connection) {
+    // Ensure state is loaded
+    await this.rehydrate();
+
     const msg = JSON.parse(message) as ClientMessage;
 
     switch (msg.type) {
       case "CREATE_SESSION": {
+        // If session already exists (e.g. rehydrated), send it to the client
+        // instead of creating a new one — this handles the reconnect-after-refresh case
+        if (this.session) {
+          const existingPlayer = this.session.players.find(
+            (p) => p.id === msg.player.id
+          );
+          if (existingPlayer) {
+            existingPlayer.connected = true;
+            existingPlayer.name = msg.player.name;
+          }
+          sender.send(
+            JSON.stringify({
+              type: "SESSION_CREATED",
+              session: this.session,
+            } satisfies ServerMessage)
+          );
+          if (this.gameState) {
+            sender.send(
+              JSON.stringify({
+                type: "GAME_STATE",
+                gameState: this.gameState,
+              } satisfies ServerMessage)
+            );
+          }
+          this.broadcast(
+            JSON.stringify({
+              type: "SESSION_UPDATED",
+              session: this.session,
+            } satisfies ServerMessage)
+          );
+          await this.persist();
+          break;
+        }
+
         this.session = {
           id: this.room.id,
           code: generateSessionCode(),
@@ -92,6 +157,7 @@ export default class BrassBirminghamServer implements Party.Server {
             session: this.session,
           } satisfies ServerMessage)
         );
+        await this.persist();
         break;
       }
 
@@ -105,6 +171,35 @@ export default class BrassBirminghamServer implements Party.Server {
           );
           return;
         }
+
+        // Allow reconnecting players even if game has already started
+        const existingPlayer = this.session.players.find(
+          (p) => p.id === msg.player.id
+        );
+
+        if (existingPlayer) {
+          // Reconnecting player — mark connected and send full state
+          existingPlayer.connected = true;
+          existingPlayer.name = msg.player.name;
+          this.broadcast(
+            JSON.stringify({
+              type: "SESSION_UPDATED",
+              session: this.session,
+            } satisfies ServerMessage)
+          );
+          if (this.gameState) {
+            sender.send(
+              JSON.stringify({
+                type: "GAME_STATE",
+                gameState: this.gameState,
+              } satisfies ServerMessage)
+            );
+          }
+          await this.persist();
+          break;
+        }
+
+        // New player joining — only allowed during lobby phase
         if (this.session.status !== "lobby") {
           sender.send(
             JSON.stringify({
@@ -114,57 +209,22 @@ export default class BrassBirminghamServer implements Party.Server {
           );
           return;
         }
-        // Check if player already in session (reconnecting)
-        const existing = this.session.players.find(
-          (p) => p.id === msg.player.id
-        );
-        if (existing) {
-          existing.connected = true;
-          existing.name = msg.player.name;
-        } else {
-          if (this.session.players.length >= 4) {
-            sender.send(
-              JSON.stringify({
-                type: "ERROR",
-                message: "Session is full",
-              } satisfies ServerMessage)
-            );
-            return;
-          }
-          const colors = ["red", "yellow", "green", "purple"] as const;
-          const usedColors = new Set(this.session.players.map((p) => p.color));
-          const nextColor =
-            colors.find((c) => !usedColors.has(c)) ?? "red";
-          this.session.players.push({
-            id: msg.player.id,
-            name: msg.player.name,
-            color: nextColor,
-            seatOrder: this.session.players.length,
-            connected: true,
-          });
+        if (this.session.players.length >= 4) {
+          sender.send(
+            JSON.stringify({
+              type: "ERROR",
+              message: "Session is full",
+            } satisfies ServerMessage)
+          );
+          return;
         }
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
-        break;
-      }
-
-      case "ADD_BOT": {
-        if (!this.session || this.session.status !== "lobby") return;
-        if (this.session.players.length >= 4) return;
         const colors = ["red", "yellow", "green", "purple"] as const;
         const usedColors = new Set(this.session.players.map((p) => p.color));
-        const nextColor = colors.find((c) => !usedColors.has(c)) ?? "red";
-        const botIndex = this.session.players.filter((p) =>
-          p.id.startsWith("bot-")
-        ).length;
-        const botId = `bot-${crypto.randomUUID().slice(0, 8)}`;
+        const nextColor =
+          colors.find((c) => !usedColors.has(c)) ?? "red";
         this.session.players.push({
-          id: botId,
-          name: BOT_NAMES[botIndex] ?? `Bot ${botIndex + 1}`,
+          id: msg.player.id,
+          name: msg.player.name,
           color: nextColor,
           seatOrder: this.session.players.length,
           connected: true,
@@ -175,6 +235,34 @@ export default class BrassBirminghamServer implements Party.Server {
             session: this.session,
           } satisfies ServerMessage)
         );
+        await this.persist();
+        break;
+      }
+
+      case "ADD_BOT": {
+        if (!this.session || this.session.status !== "lobby") return;
+        if (this.session.players.length >= 4) return;
+        const botColors = ["red", "yellow", "green", "purple"] as const;
+        const usedBotColors = new Set(this.session.players.map((p) => p.color));
+        const nextBotColor = botColors.find((c) => !usedBotColors.has(c)) ?? "red";
+        const botIndex = this.session.players.filter((p) =>
+          p.id.startsWith("bot-")
+        ).length;
+        const botId = `bot-${crypto.randomUUID().slice(0, 8)}`;
+        this.session.players.push({
+          id: botId,
+          name: BOT_NAMES[botIndex] ?? `Bot ${botIndex + 1}`,
+          color: nextBotColor,
+          seatOrder: this.session.players.length,
+          connected: true,
+        });
+        this.broadcast(
+          JSON.stringify({
+            type: "SESSION_UPDATED",
+            session: this.session,
+          } satisfies ServerMessage)
+        );
+        await this.persist();
         break;
       }
 
@@ -183,7 +271,6 @@ export default class BrassBirminghamServer implements Party.Server {
         this.session.players = this.session.players.filter(
           (p) => p.id !== msg.botId
         );
-        // Reassign seat orders
         this.session.players.forEach((p, i) => {
           p.seatOrder = i;
         });
@@ -193,18 +280,15 @@ export default class BrassBirminghamServer implements Party.Server {
             session: this.session,
           } satisfies ServerMessage)
         );
+        await this.persist();
         break;
       }
 
       case "START_GAME": {
         if (!this.session) return;
-        // Only the session creator (admin) can start the game
-        // sender.id is the WebSocket connection ID, not playerId,
-        // so we trust the client-side isHost check for now.
         this.session.status = "active";
         const playerCount = this.session.players.length;
 
-        // Shuffle player order randomly for the first round
         const playerIds = this.session.players.map((p) => p.id);
         for (let i = playerIds.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -227,7 +311,7 @@ export default class BrassBirminghamServer implements Party.Server {
           phase: "actions",
           turnOrder: playerIds,
           activePlayerIndex: 0,
-          actionsRemainingForActivePlayer: 1, // first round = 1 action
+          actionsRemainingForActivePlayer: 1,
           roundSpending,
           playerStates,
           history: [],
@@ -246,12 +330,12 @@ export default class BrassBirminghamServer implements Party.Server {
             gameState: this.gameState,
           } satisfies ServerMessage)
         );
+        await this.persist();
         break;
       }
 
       case "RESET_GAME": {
         if (!this.session) return;
-        // Reset session back to lobby, clear game state
         this.session.status = "lobby";
         this.gameState = null;
         this.broadcast(
@@ -260,18 +344,19 @@ export default class BrassBirminghamServer implements Party.Server {
             session: this.session,
           } satisfies ServerMessage)
         );
+        await this.persist();
         break;
       }
 
       case "END_SESSION": {
         if (!this.session) return;
-        // Admin ends session — notify all clients
         this.session.status = "finished";
         this.gameState = null;
         this.broadcast(
           JSON.stringify({ type: "SESSION_ENDED" } satisfies ServerMessage)
         );
         this.session = null;
+        await this.persist(); // clears storage
         break;
       }
 
@@ -284,12 +369,14 @@ export default class BrassBirminghamServer implements Party.Server {
             gameState: this.gameState,
           } satisfies ServerMessage)
         );
+        await this.persist();
         break;
       }
     }
   }
 
-  onClose(conn: Party.Connection) {
+  async onClose(conn: Party.Connection) {
+    await this.rehydrate();
     if (this.session) {
       const player = this.session.players.find((p) => p.id === conn.id);
       if (player) {
@@ -301,6 +388,7 @@ export default class BrassBirminghamServer implements Party.Server {
           session: this.session,
         } satisfies ServerMessage)
       );
+      await this.persist();
     }
   }
 
