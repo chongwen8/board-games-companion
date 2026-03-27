@@ -12,7 +12,7 @@ export function LanguageSwitcher() {
   return (
     <button
       onClick={toggle}
-      className="flex h-7 items-center gap-1 rounded-full border border-border bg-muted/50 px-2.5 text-xs font-medium text-muted-foreground transition-colors active:bg-muted"
+      className="flex h-7 items-center gap-1 rounded-full border border-border bg-muted/70 px-2.5 text-xs font-medium text-muted-foreground transition-colors active:bg-muted"
     >
       <span className="text-[10px]">
         {locale === "en" ? "EN" : "\u4E2D"}

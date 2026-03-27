@@ -27,7 +27,7 @@ import { useI18n } from "@/lib/i18n";
 
 const COLOR_DOT: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
@@ -102,7 +102,7 @@ export function IndustryGrid({
       {/* Legend */}
       <div className="flex items-center gap-5 px-1 text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm border border-border/60 bg-muted/40" />
+          <span className="inline-block h-2.5 w-2.5 rounded-sm border border-border bg-muted/70" />
           {t.industry.available}
         </span>
         <span className="flex items-center gap-1.5">
@@ -131,7 +131,7 @@ export function IndustryGrid({
             className={`overflow-hidden rounded-xl border transition-colors ${
               isOpen
                 ? `${INDUSTRY_BORDER[industry]} ${INDUSTRY_BG[industry]}`
-                : "border-border/30 bg-card/40"
+                : "border-border bg-card shadow-xs"
             }`}
           >
             {/* Header */}
@@ -273,7 +273,7 @@ function TileTrack({
 
         return (
           <div key={g.level} className="flex flex-col items-center mr-1.5 last:mr-0">
-            <span className={`mb-0.5 text-[9px] tabular-nums ${levelRestricted ? "text-red-400/60 line-through" : tileEra === "rail" ? "text-blue-400/60" : tileEra === "canal" ? "text-amber-400/60" : "text-muted-foreground/50"}`}>
+            <span className={`mb-0.5 text-[9px] tabular-nums ${levelRestricted ? "text-red-500/60 line-through" : tileEra === "rail" ? "text-blue-600/60" : tileEra === "canal" ? "text-amber-600/60" : "text-muted-foreground/50"}`}>
               {g.level}
             </span>
             <div className="flex gap-0.5">
@@ -318,14 +318,14 @@ function TileTrack({
                       ${isLocked && !readonly ? "opacity-20" : ""}
                       ${
                         status === "built"
-                          ? "bg-emerald-500/20 text-emerald-400"
+                          ? "bg-emerald-100 text-emerald-700"
                           : status === "developed"
-                            ? "bg-amber-500/20 text-amber-400"
+                            ? "bg-amber-100 text-amber-700"
                             : cantBuild
-                              ? "border border-red-500/30 bg-red-500/5 text-red-400/40"
+                              ? "border border-red-300 bg-red-50 text-red-400"
                               : isNext && !readonly
-                                ? "border border-foreground/20 bg-foreground/5 text-foreground/60"
-                                : "bg-muted/30 text-muted-foreground/30"
+                                ? "border border-border bg-secondary text-foreground/70"
+                                : "bg-muted/50 text-muted-foreground/40"
                       }
                     `}
                   >

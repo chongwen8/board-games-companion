@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n";
 
 const COLOR_DOT: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
@@ -55,7 +55,7 @@ export function Dashboard({
       {/* Era + Round header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="rounded-md bg-foreground/10 px-2.5 py-1 text-sm font-semibold">
+          <span className="rounded-md bg-muted px-2.5 py-1 text-sm font-semibold">
             {gameState.era === "canal" ? t.game.canalEra : t.game.railEra}
           </span>
           <span className="text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function Dashboard({
             return (
               <div
                 key={pid}
-                className="flex items-center gap-3 rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-2.5"
+                className="flex items-center gap-3 rounded-xl bg-secondary border border-border px-4 py-2.5"
               >
                 <div className={`h-3 w-3 rounded-full ${COLOR_DOT[player.color] ?? "bg-gray-500"}`} />
                 <span className="flex-1 text-sm font-semibold">
@@ -115,7 +115,7 @@ export function Dashboard({
       </div>
 
       {/* Next round order preview */}
-      <div className="rounded-xl bg-card/30 p-3">
+      <div className="rounded-xl bg-card shadow-xs p-3">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           {t.spend.nextRoundOrder}
         </p>
@@ -140,7 +140,7 @@ export function Dashboard({
 
       {/* End Round — host only */}
       {showEndRound ? (
-        <div className="rounded-xl border border-border/30 bg-card/40 p-4">
+        <div className="rounded-xl border border-border bg-card shadow-sm p-4">
           <EndOfRoundFlow
             session={session}
             gameState={gameState}

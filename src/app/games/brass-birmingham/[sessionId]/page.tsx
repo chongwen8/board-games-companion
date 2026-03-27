@@ -29,7 +29,7 @@ const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 const COLOR_CLASSES: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
@@ -238,7 +238,7 @@ function SessionContent() {
     return (
       <>
         {/* Top bar */}
-        <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/30 bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/80">
+        <div className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2.5">
             <span className="flex items-center gap-2 text-sm font-bold">
               <span
@@ -336,7 +336,7 @@ function SessionContent() {
 
       {session && (
         <>
-          <div className="rounded-2xl bg-card/50 p-6 text-center">
+          <div className="rounded-2xl bg-card shadow-sm p-6 text-center">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               {t.lobby.sessionCode}
             </p>
@@ -357,7 +357,7 @@ function SessionContent() {
               return (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 rounded-xl bg-card/50 px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl bg-card shadow-xs px-4 py-3"
                 >
                   <div
                     className={`h-4 w-4 rounded-full ${COLOR_CLASSES[p.color] ?? "bg-gray-500"}`}
@@ -381,7 +381,7 @@ function SessionContent() {
                     </button>
                   ) : (
                     <span
-                      className={`text-xs ${p.connected ? "text-emerald-400" : "text-muted-foreground"}`}
+                      className={`text-xs ${p.connected ? "text-emerald-600" : "text-muted-foreground"}`}
                     >
                       {isBot ? t.lobby.bot : p.connected ? t.lobby.connected : t.lobby.disconnected}
                     </span>

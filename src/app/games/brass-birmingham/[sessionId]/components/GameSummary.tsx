@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n";
 
 const COLOR_DOT: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
@@ -61,8 +61,8 @@ export function GameSummary({ session, gameState }: GameSummaryProps) {
             key={s.pid}
             className={`rounded-2xl p-5 ${
               idx === 0
-                ? "bg-amber-400/5 ring-1 ring-amber-400/20"
-                : "bg-card/50"
+                ? "bg-amber-50 ring-1 ring-amber-300"
+                : "bg-card shadow-xs"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -71,20 +71,20 @@ export function GameSummary({ session, gameState }: GameSummaryProps) {
               </span>
               <div className={`h-4 w-4 rounded-full ${COLOR_DOT[s.color] ?? "bg-gray-500"}`} />
               <span className="flex-1 text-lg font-semibold">{s.name}</span>
-              <span className="text-2xl font-bold text-amber-400">
+              <span className="text-2xl font-bold text-amber-600">
                 {s.total}
               </span>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-md bg-foreground/5 px-2 py-1">
+              <span className="rounded-md bg-secondary px-2 py-1">
                 {t.summary.industryLinks}: {s.vp}
               </span>
-              <span className="rounded-md bg-foreground/5 px-2 py-1">
+              <span className="rounded-md bg-secondary px-2 py-1">
                 {t.summary.moneyBonus}: {"\u00A3"}{s.money} {"\u2192"} +{s.moneyVP}
               </span>
               {s.loans > 0 && (
-                <span className="rounded-md bg-red-500/10 px-2 py-1 text-red-400">
+                <span className="rounded-md bg-red-50 px-2 py-1 text-red-600">
                   {t.summary.loanPenalty}: {s.loans} {"\u2192"} -{s.loanPenalty}
                 </span>
               )}
@@ -93,7 +93,7 @@ export function GameSummary({ session, gameState }: GameSummaryProps) {
         ))}
       </div>
 
-      <div className="rounded-xl bg-card/50 p-4">
+      <div className="rounded-xl bg-card shadow-sm p-4">
         <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           {t.summary.gameStats}
         </h3>

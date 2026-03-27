@@ -95,7 +95,7 @@ export default function BrassLobbyPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Rejoin active session */}
         {activeSession && (
-          <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 space-y-3">
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 space-y-3">
             <p className="text-sm font-medium">You have an active session</p>
             <div className="flex gap-2">
               <Button
@@ -127,7 +127,7 @@ export default function BrassLobbyPage() {
 
         {/* Auth status */}
         {user && (
-          <div className="flex items-center justify-between rounded-xl bg-card/50 px-3 py-2">
+          <div className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2">
             <span className="text-xs text-muted-foreground">{user.email}</span>
             <button
               onClick={signOut}
@@ -159,7 +159,7 @@ export default function BrassLobbyPage() {
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         {/* Create */}
-        <div className="rounded-2xl bg-card/50 p-5 space-y-3">
+        <div className="rounded-2xl bg-card shadow-sm p-5 space-y-3">
           <p className="text-sm font-semibold">{t.lobby.newSession}</p>
           <Button onClick={handleCreate} className="w-full rounded-xl" size="lg">
             {t.lobby.createSession}
@@ -167,7 +167,7 @@ export default function BrassLobbyPage() {
         </div>
 
         {/* Join */}
-        <div className="rounded-2xl bg-card/50 p-5 space-y-3">
+        <div className="rounded-2xl bg-card shadow-sm p-5 space-y-3">
           <p className="text-sm font-semibold">{t.lobby.joinSession}</p>
           <Input
             placeholder={t.lobby.enterCode}

@@ -14,7 +14,7 @@ import { useI18n } from "@/lib/i18n";
 
 const COLOR_DOT: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
@@ -83,7 +83,7 @@ export function EndOfRoundFlow({
           return (
             <div
               key={pid}
-              className="flex items-center gap-3 rounded-xl bg-card/50 px-4 py-2.5"
+              className="flex items-center gap-3 rounded-xl bg-card shadow-xs px-4 py-2.5"
             >
               <div
                 className={`h-3 w-3 rounded-full ${COLOR_DOT[player.color] ?? "bg-gray-500"}`}
@@ -94,7 +94,7 @@ export function EndOfRoundFlow({
               </span>
               <span
                 className={`text-xs font-semibold tabular-nums ${
-                  payout >= 0 ? "text-emerald-400" : "text-red-400"
+                  payout >= 0 ? "text-emerald-600" : "text-red-600"
                 }`}
               >
                 {payout >= 0 ? `+£${payout}` : `-£${Math.abs(payout)}`}
@@ -130,8 +130,8 @@ export function EndOfRoundFlow({
 
       {/* Era transition notes */}
       {isLastRound && gameState.era === "canal" && (
-        <div className="rounded-xl bg-amber-500/5 p-3 text-xs space-y-1">
-          <p className="font-semibold text-amber-400">
+        <div className="rounded-xl bg-amber-50 p-3 text-xs space-y-1">
+          <p className="font-semibold text-amber-600">
             {t.endOfRound.canalToRail}
           </p>
           <ul className="space-y-0.5 text-muted-foreground list-disc ml-4">
@@ -143,7 +143,7 @@ export function EndOfRoundFlow({
       )}
 
       {isLastRound && gameState.era === "rail" && (
-        <div className="rounded-xl bg-foreground/5 p-3 text-xs space-y-1">
+        <div className="rounded-xl bg-secondary p-3 text-xs space-y-1">
           <p className="font-semibold">
             {t.endOfRound.finalScoring}
           </p>

@@ -35,7 +35,7 @@ export function GuideTab({ session, gameState, onSend, isHost }: GuideTabProps) 
   return (
     <div className="space-y-4">
       {/* Segmented control */}
-      <div className="flex gap-1 rounded-xl bg-muted/40 p-1">
+      <div className="flex gap-1 rounded-xl bg-muted/70 p-1">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
@@ -77,16 +77,16 @@ function tileLevel(industry: string, index: number): number {
 
 const PLAYER_COLORS: Record<string, string> = {
   red: "bg-red-500",
-  yellow: "bg-amber-400",
+  yellow: "bg-amber-500",
   green: "bg-emerald-500",
   purple: "bg-violet-500",
 };
 
 const TEXT_COLORS: Record<string, string> = {
-  red: "text-red-400",
-  yellow: "text-amber-400",
-  green: "text-emerald-400",
-  purple: "text-violet-400",
+  red: "text-red-600",
+  yellow: "text-amber-600",
+  green: "text-emerald-600",
+  purple: "text-violet-600",
 };
 
 function HistoryPanel({
@@ -140,7 +140,7 @@ function HistoryPanel({
       {isHost && canUndo && (
         <button
           onClick={() => onSend({ type: "GAME_ACTION", action: { type: "UNDO" } })}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted/40 py-2.5 text-xs font-medium text-muted-foreground active:bg-muted"
+          className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted/70 py-2.5 text-xs font-medium text-muted-foreground active:bg-muted"
         >
           <Undo2 className="h-3.5 w-3.5" />
           {t.history.undo}
@@ -355,7 +355,7 @@ function RulesPanel() {
           placeholder={t.rules.searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-xl bg-muted/30 border-0 pl-9 text-sm h-9"
+          className="rounded-xl bg-muted/60 border-0 pl-9 text-sm h-9"
         />
       </div>
 

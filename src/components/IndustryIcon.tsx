@@ -94,30 +94,30 @@ const ICON_MAP: Record<IndustryType, React.FC<{ size: number }>> = {
 
 /** Color palette for each industry. */
 export const INDUSTRY_COLORS: Record<IndustryType, string> = {
-  coal: "text-stone-400",
-  iron: "text-slate-400",
-  brewery: "text-amber-400",
-  cotton: "text-sky-400",
-  manufacturer: "text-violet-400",
-  pottery: "text-rose-400",
+  coal: "text-stone-600",
+  iron: "text-slate-600",
+  brewery: "text-amber-600",
+  cotton: "text-sky-600",
+  manufacturer: "text-violet-600",
+  pottery: "text-rose-600",
 };
 
 export const INDUSTRY_BG: Record<IndustryType, string> = {
-  coal: "bg-stone-400/10",
-  iron: "bg-slate-400/10",
-  brewery: "bg-amber-400/10",
-  cotton: "bg-sky-400/10",
-  manufacturer: "bg-violet-400/10",
-  pottery: "bg-rose-400/10",
+  coal: "bg-stone-100",
+  iron: "bg-slate-100",
+  brewery: "bg-amber-50",
+  cotton: "bg-sky-50",
+  manufacturer: "bg-violet-50",
+  pottery: "bg-rose-50",
 };
 
 export const INDUSTRY_BORDER: Record<IndustryType, string> = {
-  coal: "border-stone-400/30",
-  iron: "border-slate-400/30",
-  brewery: "border-amber-400/30",
-  cotton: "border-sky-400/30",
-  manufacturer: "border-violet-400/30",
-  pottery: "border-rose-400/30",
+  coal: "border-stone-300",
+  iron: "border-slate-300",
+  brewery: "border-amber-300",
+  cotton: "border-sky-300",
+  manufacturer: "border-violet-300",
+  pottery: "border-rose-300",
 };
 
 export function IndustryIcon({ industry, className = "", size = 20 }: IndustryIconProps) {
