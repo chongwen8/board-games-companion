@@ -12,6 +12,8 @@ const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 interface UsePartySocketOptions {
   roomId: string;
+  /** Player ID used as connection ID so the server can identify disconnects. */
+  playerId?: string;
   onSession?: (session: Session) => void;
   onGameState?: (gameState: BrassGameState) => void;
   onError?: (message: string) => void;
@@ -21,6 +23,7 @@ interface UsePartySocketOptions {
 
 export function usePartySocket({
   roomId,
+  playerId,
   onSession,
   onGameState,
   onError,
@@ -45,9 +48,11 @@ export function usePartySocket({
   });
 
   useEffect(() => {
+    if (!playerId) return; // wait until player ID is available
     const socket = new PartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
+      id: playerId, // use player ID as connection ID for server-side disconnect tracking
     });
 
     socket.addEventListener("open", () => {
@@ -85,7 +90,7 @@ export function usePartySocket({
       socket.close();
       socketRef.current = null;
     };
-  }, [roomId]);
+  }, [roomId, playerId]);
 
   const send = useCallback((message: ClientMessage) => {
     socketRef.current?.send(JSON.stringify(message));

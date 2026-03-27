@@ -123,6 +123,7 @@ function SessionContent() {
 
   const { send, connected } = usePartySocket({
     roomId: sessionId,
+    playerId,
     onSession: handleSession,
     onGameState: handleGameState,
     onError: handleError,

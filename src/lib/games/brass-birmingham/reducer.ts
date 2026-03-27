@@ -16,7 +16,7 @@ import type {
 } from "./types";
 
 const MAX_HISTORY = 100;
-const MAX_UNDO_STACK = 50;
+const MAX_UNDO_STACK = 300; // ~full game worth of actions (4p × 2 actions × ~16 rounds × 2 eras)
 
 /** Strip the undo stack from state to create a lightweight snapshot. */
 function snapshot(state: BrassGameState): BrassGameStateSnapshot {
@@ -156,17 +156,16 @@ export function brassReducer(
       }
 
       case "NEXT_ERA": {
-        draft.era = "rail";
-        draft.round = 1;
-        draft.activePlayerIndex = 0;
-        draft.actionsRemainingForActivePlayer = 1;
-        draft.phase = "actions";
+        // 1. Apply income payouts (same as END_ROUND — this round is the last)
         for (const pid of draft.turnOrder) {
-          draft.roundSpending[pid] = 0;
+          const ps = draft.playerStates[pid];
+          if (ps) {
+            const payout = getIncomePayout(ps.income);
+            ps.money += payout;
+          }
         }
-        // Era transition: Lock all built/developed tiles (they're permanent).
-        // Level 1 available tiles can still be developed but not built
-        // (canBuildInEra already handles the build restriction).
+
+        // 2. Lock all built/developed tiles permanently
         for (const pid of draft.turnOrder) {
           const ps = draft.playerStates[pid];
           if (!ps) continue;
@@ -182,6 +181,23 @@ export function brassReducer(
               }
             }
           }
+        }
+
+        // 3. Recalculate turn order based on last round spending
+        const eraNewOrder = calculateTurnOrder(
+          draft.roundSpending,
+          draft.turnOrder
+        );
+        draft.turnOrder = eraNewOrder;
+
+        // 4. Transition to Rail Era
+        draft.era = "rail";
+        draft.round = 1;
+        draft.activePlayerIndex = 0;
+        draft.actionsRemainingForActivePlayer = 1;
+        draft.phase = "actions";
+        for (const pid of draft.turnOrder) {
+          draft.roundSpending[pid] = 0;
         }
         break;
       }

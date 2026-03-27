@@ -15,6 +15,17 @@ import type { BrassGameState, IndustryType, TileStatus } from "../src/lib/games/
 
 const BOT_NAMES = ["Alice (bot)", "Bob (bot)", "Carol (bot)"];
 
+/** Sessions older than this are automatically cleared on rehydrate. */
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+// Storage is sharded across 3 keys (128 KB each):
+//   "session"  — session metadata + createdAt + undoChunkCount  (~2 KB)
+//   "game"     — game state + history, NO undo stack            (~15 KB)
+//   "undo-0", "undo-1", ... — auto-sharded undo snapshots      (~100 KB each)
+// No hard limit on total undos — keys are created as needed.
+const UNDO_CHUNK = 25;  // snapshots per key (~100 KB, safely under 128 KB)
+const PERSIST_HISTORY = 100;
+
 function createInitialPlayerState(playerCount: number): {
   money: number;
   income: number;
@@ -42,67 +53,213 @@ function createInitialPlayerState(playerCount: number): {
 export default class BrassBirminghamServer implements Party.Server {
   session: Session | null = null;
   gameState: BrassGameState | null = null;
+  /** Timestamp when this session was created (persisted alongside session). */
+  private createdAt: number = 0;
 
   constructor(readonly room: Party.Room) {}
+
+  /* ------------------------------------------------------------------ */
+  /*  Storage — auto-sharded across multiple keys                       */
+  /*    "session" — session metadata + createdAt                        */
+  /*    "game"    — core game state + history (no undo)                 */
+  /*    "undo-0", "undo-1", ... — 25 snapshots per key (~100 KB each)  */
+  /* ------------------------------------------------------------------ */
 
   /** Restore state from durable storage on first connect after hibernation. */
   private async rehydrate() {
     if (this.session) return; // already loaded
-    const stored = await this.room.storage.get<{
+
+    const sessionData = await this.room.storage.get<{
       session: Session;
-      gameState: BrassGameState | null;
-    }>("state");
-    if (stored) {
-      this.session = stored.session;
-      this.gameState = stored.gameState;
+      createdAt: number;
+    }>("session");
+
+    if (!sessionData) return;
+
+    // Check TTL — auto-clear sessions older than 4 hours
+    if (Date.now() - (sessionData.createdAt ?? 0) > SESSION_TTL_MS) {
+      await this.clearStorage();
+      return;
+    }
+
+    this.session = sessionData.session;
+    this.createdAt = sessionData.createdAt ?? Date.now();
+
+    // Load game state + discover all undo chunks via prefix scan
+    const [gameData, undoEntries] = await Promise.all([
+      this.room.storage.get<BrassGameState>("game"),
+      this.room.storage.list<unknown[]>({ prefix: "undo-" }),
+    ]);
+
+    if (gameData) {
+      // Reassemble undo stack from all chunks in key order (undo-0, undo-1, ...)
+      const undoStack: unknown[] = [];
+      const sortedKeys = [...undoEntries.keys()].sort((a, b) => {
+        const numA = parseInt(a.split("-")[1]);
+        const numB = parseInt(b.split("-")[1]);
+        return numA - numB;
+      });
+      for (const key of sortedKeys) {
+        const chunk = undoEntries.get(key);
+        if (chunk) undoStack.push(...chunk);
+      }
+      this.gameState = {
+        ...gameData,
+        _undoStack: undoStack as BrassGameState["_undoStack"],
+      };
     }
   }
 
-  /** Persist current state to durable storage. */
+  /** Persist current state to durable storage (atomic batch writes). */
   private async persist() {
-    if (this.session) {
-      await this.room.storage.put("state", {
-        session: this.session,
-        gameState: this.gameState,
-      });
-    } else {
-      await this.room.storage.delete("state");
+    try {
+      if (!this.session) {
+        await this.clearStorage();
+        return;
+      }
+
+      if (this.gameState) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _undoStack, history, ...coreState } = this.gameState;
+
+        // Strip history from each undo snapshot to save space
+        const leanSnapshots = (_undoStack ?? []).map((snap) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { history: _h, _undoStack: _u, ...s } = snap as Record<string, unknown>;
+          return s;
+        });
+
+        // Auto-shard undo into chunks of 25 per key (~100 KB each)
+        const entries: Record<string, unknown> = {
+          session: {
+            session: this.session,
+            createdAt: this.createdAt || Date.now(),
+          },
+          game: {
+            ...coreState,
+            history: (history ?? []).slice(-PERSIST_HISTORY),
+          },
+        };
+        let newChunkCount = 0;
+        for (let i = 0; i < leanSnapshots.length; i += UNDO_CHUNK) {
+          entries[`undo-${newChunkCount}`] = leanSnapshots.slice(i, i + UNDO_CHUNK);
+          newChunkCount++;
+        }
+
+        // Atomic batch write — all-or-nothing
+        await this.room.storage.put(entries);
+
+        // Clean up stale undo keys that are no longer needed
+        const existing = await this.room.storage.list({ prefix: "undo-" });
+        const staleKeys = [...existing.keys()].filter(
+          (k) => parseInt(k.split("-")[1]) >= newChunkCount
+        );
+        if (staleKeys.length > 0) {
+          await this.room.storage.delete(staleKeys);
+        }
+      } else {
+        // No game state — keep session, clear game + all undo keys
+        await this.room.storage.put("session", {
+          session: this.session,
+          createdAt: this.createdAt || Date.now(),
+        });
+        const undoKeys = await this.room.storage.list({ prefix: "undo-" });
+        const keysToDelete = ["game", ...undoKeys.keys()];
+        if (keysToDelete.length > 0) {
+          await this.room.storage.delete(keysToDelete);
+        }
+      }
+    } catch (err) {
+      console.error("[persist] storage error:", err);
     }
   }
+
+  /** Wipe all storage keys. */
+  private async clearStorage() {
+    const undoKeys = await this.room.storage.list({ prefix: "undo-" });
+    const allKeys = ["session", "game", "state", "undo", ...undoKeys.keys()];
+    await this.room.storage.delete(allKeys);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Broadcast helper — strips undo stack from payload                 */
+  /* ------------------------------------------------------------------ */
+
+  /** Game state without undo stack, safe to broadcast to clients. */
+  private broadcastGameState(): BrassGameState | null {
+    if (!this.gameState) return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _undoStack, ...rest } = this.gameState;
+    return rest as BrassGameState;
+  }
+
+  private broadcast(message: string) {
+    for (const conn of this.room.getConnections()) {
+      conn.send(message);
+    }
+  }
+
+  private sendGameState(target: Party.Connection | "all") {
+    const state = this.broadcastGameState();
+    if (!state) return;
+    const payload = JSON.stringify({
+      type: "GAME_STATE",
+      gameState: state,
+    } satisfies ServerMessage);
+    if (target === "all") {
+      this.broadcast(payload);
+    } else {
+      target.send(payload);
+    }
+  }
+
+  private sendSession(target: Party.Connection | "all") {
+    if (!this.session) return;
+    const payload = JSON.stringify({
+      type: "SESSION_UPDATED",
+      session: this.session,
+    } satisfies ServerMessage);
+    if (target === "all") {
+      this.broadcast(payload);
+    } else {
+      target.send(payload);
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Connection lifecycle                                              */
+  /* ------------------------------------------------------------------ */
 
   async onConnect(conn: Party.Connection) {
-    // Rehydrate from storage if server was hibernated
     await this.rehydrate();
+    this.sendSession(conn);
+    this.sendGameState(conn);
+  }
 
-    // Send current state to newly connected/reconnected client
+  async onClose(conn: Party.Connection) {
+    await this.rehydrate();
     if (this.session) {
-      conn.send(
-        JSON.stringify({
-          type: "SESSION_UPDATED",
-          session: this.session,
-        } satisfies ServerMessage)
-      );
-    }
-    if (this.gameState) {
-      conn.send(
-        JSON.stringify({
-          type: "GAME_STATE",
-          gameState: this.gameState,
-        } satisfies ServerMessage)
-      );
+      const player = this.session.players.find((p) => p.id === conn.id);
+      if (player) {
+        player.connected = false;
+      }
+      this.sendSession("all");
+      await this.persist();
     }
   }
 
+  /* ------------------------------------------------------------------ */
+  /*  Message handling                                                  */
+  /* ------------------------------------------------------------------ */
+
   async onMessage(message: string, sender: Party.Connection) {
-    // Ensure state is loaded
     await this.rehydrate();
 
     const msg = JSON.parse(message) as ClientMessage;
 
     switch (msg.type) {
       case "CREATE_SESSION": {
-        // If session already exists (e.g. rehydrated), send it to the client
-        // instead of creating a new one — this handles the reconnect-after-refresh case
+        // Reconnect path — session already exists
         if (this.session) {
           const existingPlayer = this.session.players.find(
             (p) => p.id === msg.player.id
@@ -117,24 +274,14 @@ export default class BrassBirminghamServer implements Party.Server {
               session: this.session,
             } satisfies ServerMessage)
           );
-          if (this.gameState) {
-            sender.send(
-              JSON.stringify({
-                type: "GAME_STATE",
-                gameState: this.gameState,
-              } satisfies ServerMessage)
-            );
-          }
-          this.broadcast(
-            JSON.stringify({
-              type: "SESSION_UPDATED",
-              session: this.session,
-            } satisfies ServerMessage)
-          );
+          this.sendGameState(sender);
+          this.sendSession("all");
           await this.persist();
           break;
         }
 
+        // Fresh session
+        this.createdAt = Date.now();
         this.session = {
           id: this.room.id,
           code: generateSessionCode(),
@@ -172,34 +319,20 @@ export default class BrassBirminghamServer implements Party.Server {
           return;
         }
 
-        // Allow reconnecting players even if game has already started
+        // Reconnecting player
         const existingPlayer = this.session.players.find(
           (p) => p.id === msg.player.id
         );
-
         if (existingPlayer) {
-          // Reconnecting player — mark connected and send full state
           existingPlayer.connected = true;
           existingPlayer.name = msg.player.name;
-          this.broadcast(
-            JSON.stringify({
-              type: "SESSION_UPDATED",
-              session: this.session,
-            } satisfies ServerMessage)
-          );
-          if (this.gameState) {
-            sender.send(
-              JSON.stringify({
-                type: "GAME_STATE",
-                gameState: this.gameState,
-              } satisfies ServerMessage)
-            );
-          }
+          this.sendSession("all");
+          this.sendGameState(sender);
           await this.persist();
           break;
         }
 
-        // New player joining — only allowed during lobby phase
+        // New player — lobby only
         if (this.session.status !== "lobby") {
           sender.send(
             JSON.stringify({
@@ -229,12 +362,7 @@ export default class BrassBirminghamServer implements Party.Server {
           seatOrder: this.session.players.length,
           connected: true,
         });
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
+        this.sendSession("all");
         await this.persist();
         break;
       }
@@ -256,12 +384,7 @@ export default class BrassBirminghamServer implements Party.Server {
           seatOrder: this.session.players.length,
           connected: true,
         });
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
+        this.sendSession("all");
         await this.persist();
         break;
       }
@@ -274,12 +397,7 @@ export default class BrassBirminghamServer implements Party.Server {
         this.session.players.forEach((p, i) => {
           p.seatOrder = i;
         });
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
+        this.sendSession("all");
         await this.persist();
         break;
       }
@@ -318,18 +436,8 @@ export default class BrassBirminghamServer implements Party.Server {
           _undoStack: [],
         };
 
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
-        this.broadcast(
-          JSON.stringify({
-            type: "GAME_STATE",
-            gameState: this.gameState,
-          } satisfies ServerMessage)
-        );
+        this.sendSession("all");
+        this.sendGameState("all");
         await this.persist();
         break;
       }
@@ -338,12 +446,7 @@ export default class BrassBirminghamServer implements Party.Server {
         if (!this.session) return;
         this.session.status = "lobby";
         this.gameState = null;
-        this.broadcast(
-          JSON.stringify({
-            type: "SESSION_UPDATED",
-            session: this.session,
-          } satisfies ServerMessage)
-        );
+        this.sendSession("all");
         await this.persist();
         break;
       }
@@ -356,45 +459,17 @@ export default class BrassBirminghamServer implements Party.Server {
           JSON.stringify({ type: "SESSION_ENDED" } satisfies ServerMessage)
         );
         this.session = null;
-        await this.persist(); // clears storage
+        await this.clearStorage();
         break;
       }
 
       case "GAME_ACTION": {
         if (!this.gameState) return;
         this.gameState = brassReducer(this.gameState, msg.action);
-        this.broadcast(
-          JSON.stringify({
-            type: "GAME_STATE",
-            gameState: this.gameState,
-          } satisfies ServerMessage)
-        );
+        this.sendGameState("all");
         await this.persist();
         break;
       }
-    }
-  }
-
-  async onClose(conn: Party.Connection) {
-    await this.rehydrate();
-    if (this.session) {
-      const player = this.session.players.find((p) => p.id === conn.id);
-      if (player) {
-        player.connected = false;
-      }
-      this.broadcast(
-        JSON.stringify({
-          type: "SESSION_UPDATED",
-          session: this.session,
-        } satisfies ServerMessage)
-      );
-      await this.persist();
-    }
-  }
-
-  private broadcast(message: string) {
-    for (const conn of this.room.getConnections()) {
-      conn.send(message);
     }
   }
 }
