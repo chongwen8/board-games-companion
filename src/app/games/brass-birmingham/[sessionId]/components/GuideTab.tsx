@@ -107,7 +107,8 @@ function HistoryPanel({
 
   const history = gameState.history ?? [];
   const recent = history.slice(-30).reverse();
-  const canUndo = (gameState._undoStack?.length ?? 0) > 0;
+  // _undoStack is stripped from broadcasts (kept server-side only),
+  // so always show undo for host. Server ignores if stack is empty.
 
   const describe = (action: BrassAction): string => {
     const a = t.history.actions;
@@ -137,7 +138,7 @@ function HistoryPanel({
   return (
     <>
       {/* Undo */}
-      {isHost && canUndo && (
+      {isHost && (
         <button
           onClick={() => onSend({ type: "GAME_ACTION", action: { type: "UNDO" } })}
           className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted/70 py-2.5 text-xs font-medium text-muted-foreground active:bg-muted"
