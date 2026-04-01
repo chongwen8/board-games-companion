@@ -79,6 +79,59 @@ export interface Translations {
     subtitle: string;
     items: { title: string; description: string; level: string }[];
   };
+  // --- Dune: Imperium ---
+  dune: {
+    game: { title: string; subtitle: string; round: string };
+    resources: { spice: string; solari: string; water: string; vp: string; intrigue: string };
+    factions: {
+      emperor: string; spacingGuild: string; beneGesserit: string; fremen: string;
+    };
+    influence: {
+      alliance: string; allianceGained: string; allianceLost: string;
+      level: string; influence: string;
+    };
+    dashboard: {
+      nextRound: string; confirmNextRound: string; endGame: string; confirmEndGame: string;
+      waitingForHost: string;
+    };
+    history: {
+      actions: {
+        adjustedSpice: (name: string, delta: number) => string;
+        adjustedSolari: (name: string, delta: number) => string;
+        adjustedWater: (name: string, delta: number) => string;
+        adjustedVp: (name: string, delta: number) => string;
+        adjustedIntrigue: (name: string, delta: number) => string;
+        adjustedInfluence: (name: string, faction: string, delta: number) => string;
+        allianceGained: (name: string, faction: string) => string;
+        allianceLost: (name: string, faction: string) => string;
+        nextRound: string;
+        gameEnded: string;
+        undoAction: string;
+        unknown: string;
+      };
+    };
+    summary: {
+      gameOver: string; finalStandings: string;
+      alliances: string; gameStats: string;
+    };
+    tips: {
+      title: string; subtitle: string;
+      items: { title: string; description: string; level: string }[];
+    };
+    rules: {
+      title: string; searchPlaceholder: string;
+      noResults: (q: string) => string;
+      sections: {
+        resources: string; factions: string; influence: string;
+        alliance: string; combat: string; endgame: string;
+      };
+      resourceDescriptions: {
+        spice: string; solari: string; water: string; vp: string;
+      };
+      factionDesc: (maxInf: number, allianceLevel: number, thresholdLevel: number, thresholdAmount: number, thresholdResource: string) => string;
+      allianceItems: { term: string; desc: string }[];
+    };
+  };
 }
 
 const en: Translations = {
@@ -324,6 +377,102 @@ const en: Translations = {
       { title: "Links are permanent for the era", description: "You can never overbuild, replace, or remove another player's link. If they build a canal between two cities, that route is theirs. In Rail Era some routes have 2 slots, but you still can't replace an existing track.", level: "newbie" },
       { title: "New links must connect to Your Network", description: "When building a link (Network action), it must connect to a location where you have a tile or an adjacent link. You can't build links in isolation. Plan your expansion path early.", level: "intermediate" },
     ],
+  },
+  // --- Dune: Imperium ---
+  dune: {
+    game: {
+      title: "Dune: Imperium",
+      subtitle: "Companion app for in-person play",
+      round: "Round",
+    },
+    resources: {
+      spice: "Spice",
+      solari: "Solari",
+      water: "Water",
+      vp: "VP",
+      intrigue: "Intrigue",
+    },
+    factions: {
+      emperor: "Emperor",
+      spacingGuild: "Spacing Guild",
+      beneGesserit: "Bene Gesserit",
+      fremen: "Fremen",
+    },
+    influence: {
+      alliance: "Alliance",
+      allianceGained: "Alliance gained!",
+      allianceLost: "Alliance lost!",
+      level: "Level",
+      influence: "Influence",
+    },
+    dashboard: {
+      nextRound: "Next Round",
+      confirmNextRound: "Confirm — Next Round",
+      endGame: "End Game",
+      confirmEndGame: "Confirm — End Game",
+      waitingForHost: "Waiting for host to advance the round...",
+    },
+    history: {
+      actions: {
+        adjustedSpice: (name: string, delta: number) => `${name} spice ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedSolari: (name: string, delta: number) => `${name} solari ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedWater: (name: string, delta: number) => `${name} water ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedVp: (name: string, delta: number) => `${name} VP ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedIntrigue: (name: string, delta: number) => `${name} intrigue ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedInfluence: (name: string, faction: string, delta: number) =>
+          `${name} ${faction} influence ${delta >= 0 ? "+" : ""}${delta}`,
+        allianceGained: (name: string, faction: string) => `${name} gained ${faction} alliance`,
+        allianceLost: (name: string, faction: string) => `${name} lost ${faction} alliance`,
+        nextRound: "Round advanced",
+        gameEnded: "Game ended",
+        undoAction: "Undo",
+        unknown: "Unknown action",
+      },
+    },
+    summary: {
+      gameOver: "Game Over",
+      finalStandings: "Final Standings",
+      alliances: "Alliances",
+      gameStats: "Game Stats",
+    },
+    tips: {
+      title: "Common Tips",
+      subtitle: "Helpful reminders for Dune: Imperium",
+      items: [
+        { title: "Influence thresholds give bonuses", description: "Reaching influence level 2 in any faction gives an automatic bonus. Emperor & Spacing Guild give Solari, Bene Gesserit gives an Intrigue card, and Fremen gives Water.", level: "newbie" },
+        { title: "Alliance tokens are competitive", description: "The player with the highest influence (≥4) in a faction holds the alliance token. If another player surpasses you, they take the token and you lose 1 VP.", level: "newbie" },
+        { title: "Alliances give VP + bonus", description: "Gaining an alliance token immediately gives 1 VP plus a faction-specific resource bonus. Losing it removes that 1 VP.", level: "newbie" },
+        { title: "Water is the scarcest resource", description: "Water is hard to get and needed for many actions. Don't spend it carelessly early in the game.", level: "intermediate" },
+        { title: "Spice converts to Solari", description: "You can often trade Spice for Solari when selling to the Spacing Guild. Plan your resource conversion carefully.", level: "intermediate" },
+        { title: "Combat matters for VP", description: "Winning conflicts awards VP and other rewards. Don't neglect military strength entirely.", level: "intermediate" },
+      ],
+    },
+    rules: {
+      title: "Rules Reference",
+      searchPlaceholder: "Search rules...",
+      noResults: (q: string) => `No results for "${q}"`,
+      sections: {
+        resources: "Resources",
+        factions: "Factions",
+        influence: "Influence",
+        alliance: "Alliance",
+        combat: "Combat",
+        endgame: "Endgame",
+      },
+      resourceDescriptions: {
+        spice: "Primary currency for many actions. Can be traded for Solari.",
+        solari: "Money used for purchasing cards and paying costs.",
+        water: "Scarce resource required for desert actions and Fremen alliance.",
+        vp: "Victory Points. The player with the most VP at game end wins.",
+      },
+      factionDesc: (maxInf, allianceLevel, thresholdLevel, thresholdAmount, thresholdResource) =>
+        `Max influence: ${maxInf}. Alliance at level ${allianceLevel}. Threshold reward at level ${thresholdLevel}: +${thresholdAmount} ${thresholdResource}.`,
+      allianceItems: [
+        { term: "Alliance Token", desc: "Held by the player with highest influence (≥4) in a faction. Gives 1 VP + faction bonus. Lost if another player surpasses your influence." },
+        { term: "Alliance Transfer", desc: "When a player reaches higher influence than the current holder, they take the alliance token. The old holder loses 1 VP." },
+        { term: "Tie-breaking", desc: "On ties, the incumbent keeps the alliance. If no incumbent, first in turn order wins." },
+      ],
+    },
   },
 };
 

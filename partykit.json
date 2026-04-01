@@ -3,7 +3,8 @@
   "name": "boardgames",
   "main": "party/brass-birmingham.ts",
   "parties": {
-    "lobby": "party/lobby.ts"
+    "lobby": "party/lobby.ts",
+    "dune_imperium": "party/dune-imperium.ts"
   },
   "compatibilityDate": "2024-01-01"
 }

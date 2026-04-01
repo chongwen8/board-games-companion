@@ -3,5 +3,5 @@
 import { GameJoinPage } from "@/components/GameJoinPage";
 
 export default function JoinPage() {
-  return <GameJoinPage gameSlug="brass-birmingham" />;
+  return <GameJoinPage gameSlug="dune-imperium" />;
 }

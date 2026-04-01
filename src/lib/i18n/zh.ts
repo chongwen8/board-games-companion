@@ -228,6 +228,102 @@ const zh: Translations = {
       { title: "\u65B0\u94FE\u63A5\u5FC5\u987B\u8FDE\u63A5\u4F60\u7684\u7F51\u7EDC", description: "\u5EFA\u94FE\u63A5\uFF08\u7F51\u7EDC\u884C\u52A8\uFF09\u65F6\u5FC5\u987B\u8FDE\u63A5\u5230\u6709\u4F60\u7247\u6216\u76F8\u90BB\u94FE\u63A5\u7684\u4F4D\u7F6E\u3002\u4E0D\u80FD\u5B64\u7ACB\u5EFA\u94FE\u63A5\u3002\u63D0\u524D\u89C4\u5212\u6269\u5C55\u8DEF\u5F84\u3002", level: "intermediate" },
     ],
   },
+  // --- Dune: Imperium ---
+  dune: {
+    game: {
+      title: "沙丘：帝国",
+      subtitle: "桌游辅助工具",
+      round: "回合",
+    },
+    resources: {
+      spice: "香料",
+      solari: "索拉里",
+      water: "水",
+      vp: "VP",
+      intrigue: "阴谋",
+    },
+    factions: {
+      emperor: "皇帝",
+      spacingGuild: "宇航公会",
+      beneGesserit: "贝尼·杰瑟里特",
+      fremen: "弗雷曼人",
+    },
+    influence: {
+      alliance: "联盟",
+      allianceGained: "获得联盟！",
+      allianceLost: "失去联盟！",
+      level: "等级",
+      influence: "影响力",
+    },
+    dashboard: {
+      nextRound: "下一回合",
+      confirmNextRound: "确认 — 下一回合",
+      endGame: "结束游戏",
+      confirmEndGame: "确认 — 结束游戏",
+      waitingForHost: "等待房主推进回合...",
+    },
+    history: {
+      actions: {
+        adjustedSpice: (name: string, delta: number) => `${name} 香料 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedSolari: (name: string, delta: number) => `${name} 索拉里 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedWater: (name: string, delta: number) => `${name} 水 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedVp: (name: string, delta: number) => `${name} VP ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedIntrigue: (name: string, delta: number) => `${name} 阴谋 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedInfluence: (name: string, faction: string, delta: number) =>
+          `${name} ${faction} 影响力 ${delta >= 0 ? "+" : ""}${delta}`,
+        allianceGained: (name: string, faction: string) => `${name} 获得了 ${faction} 联盟`,
+        allianceLost: (name: string, faction: string) => `${name} 失去了 ${faction} 联盟`,
+        nextRound: "回合推进",
+        gameEnded: "游戏结束",
+        undoAction: "撤销",
+        unknown: "未知操作",
+      },
+    },
+    summary: {
+      gameOver: "游戏结束",
+      finalStandings: "最终排名",
+      alliances: "联盟",
+      gameStats: "游戏统计",
+    },
+    tips: {
+      title: "常见提示",
+      subtitle: "沙丘：帝国实用提醒",
+      items: [
+        { title: "影响力阈值给予奖励", description: "任何阵营达到影响力2级时自动获得奖励。皇帝和宇航公会给索拉里，贝尼·杰瑟里特给阴谋卡，弗雷曼人给水。", level: "newbie" },
+        { title: "联盟令牌是竞争性的", description: "阵营中影响力最高（≥4）的玩家持有联盟令牌。如果其他玩家超过你，他们会拿走令牌，你失去1 VP。", level: "newbie" },
+        { title: "联盟给予VP+奖励", description: "获得联盟令牌立即获得1 VP加上阵营特定资源奖励。失去联盟会扣除该1 VP。", level: "newbie" },
+        { title: "水是最稀缺的资源", description: "水很难获得且许多行动都需要。不要在游戏早期随意花费。", level: "intermediate" },
+        { title: "香料可兑换索拉里", description: "你通常可以通过卖给宇航公会将香料换成索拉里。谨慎规划资源转换。", level: "intermediate" },
+        { title: "战斗关乎VP", description: "赢得冲突可获得VP和其他奖励。不要完全忽视军事力量。", level: "intermediate" },
+      ],
+    },
+    rules: {
+      title: "规则参考",
+      searchPlaceholder: "搜索规则...",
+      noResults: (q: string) => `未找到 "${q}" 的结果`,
+      sections: {
+        resources: "资源",
+        factions: "阵营",
+        influence: "影响力",
+        alliance: "联盟",
+        combat: "战斗",
+        endgame: "终局",
+      },
+      resourceDescriptions: {
+        spice: "许多行动的主要货币。可兑换为索拉里。",
+        solari: "用于购买卡牌和支付费用的货币。",
+        water: "稀缺资源，沙漠行动和弗雷曼联盟所需。",
+        vp: "胜利点数。游戏结束时VP最多的玩家获胜。",
+      },
+      factionDesc: (maxInf: number, allianceLevel: number, thresholdLevel: number, thresholdAmount: number, thresholdResource: string) =>
+        `最高影响力：${maxInf}。${allianceLevel}级获得联盟。${thresholdLevel}级阈值奖励：+${thresholdAmount} ${thresholdResource}。`,
+      allianceItems: [
+        { term: "联盟令牌", desc: "由阵营中影响力最高（≥4）的玩家持有。给予1 VP + 阵营奖励。如果其他玩家超过你的影响力则失去。" },
+        { term: "联盟转移", desc: "当一个玩家达到比当前持有者更高的影响力时，他们获得联盟令牌。旧持有者失去1 VP。" },
+        { term: "平局判定", desc: "平局时，在任者保留联盟。如果没有在任者，回合顺序靠前的玩家获胜。" },
+      ],
+    },
+  },
 };
 
 export default zh;

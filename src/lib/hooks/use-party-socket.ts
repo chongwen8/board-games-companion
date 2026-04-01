@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import PartySocket from "partysocket";
-import type { ServerMessage, ClientMessage } from "@/lib/games/brass-birmingham/messages";
-import type { BrassGameState } from "@/lib/games/brass-birmingham/types";
 import type { Session } from "@/lib/games/types";
 
 const RAW_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999";
@@ -12,10 +10,13 @@ const PARTYKIT_HOST = RAW_HOST.replace(/^https?:\/\//, "");
 
 interface UsePartySocketOptions {
   roomId: string;
+  /** PartyKit party name. Omit to use the default (main) party. */
+  party?: string;
   /** Player ID used as connection ID so the server can identify disconnects. */
   playerId?: string;
   onSession?: (session: Session) => void;
-  onGameState?: (gameState: BrassGameState) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onGameState?: (gameState: any) => void;
   onError?: (message: string) => void;
   onSessionEnded?: () => void;
   onConnectionChange?: (connected: boolean) => void;
@@ -23,6 +24,7 @@ interface UsePartySocketOptions {
 
 export function usePartySocket({
   roomId,
+  party,
   playerId,
   onSession,
   onGameState,
@@ -53,6 +55,7 @@ export function usePartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
       id: playerId, // use player ID as connection ID for server-side disconnect tracking
+      party,
     });
 
     socket.addEventListener("open", () => {
@@ -66,7 +69,7 @@ export function usePartySocket({
     });
 
     socket.addEventListener("message", (event) => {
-      const msg = JSON.parse(event.data) as ServerMessage;
+      const msg = JSON.parse(event.data);
       switch (msg.type) {
         case "SESSION_CREATED":
         case "SESSION_UPDATED":
@@ -90,9 +93,10 @@ export function usePartySocket({
       socket.close();
       socketRef.current = null;
     };
-  }, [roomId, playerId]);
+  }, [roomId, playerId, party]);
 
-  const send = useCallback((message: ClientMessage) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const send = useCallback((message: any) => {
     socketRef.current?.send(JSON.stringify(message));
   }, []);
 

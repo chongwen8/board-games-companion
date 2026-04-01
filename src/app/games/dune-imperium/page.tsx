@@ -3,13 +3,13 @@
 import { GameLobbyPage } from "@/components/GameLobbyPage";
 import { useI18n } from "@/lib/i18n";
 
-export default function BrassLobbyPage() {
+export default function DuneLobbyPage() {
   const { t } = useI18n();
   return (
     <GameLobbyPage
-      gameSlug="brass-birmingham"
-      gameTitle={t.game.title}
-      gameSubtitle={t.game.subtitle}
+      gameSlug="dune-imperium"
+      gameTitle={t.dune.game.title}
+      gameSubtitle={t.dune.game.subtitle}
     />
   );
 }

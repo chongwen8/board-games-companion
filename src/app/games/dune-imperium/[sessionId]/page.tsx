@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useBrassSessionStore } from "@/stores/brass-session";
-import type { BrassGameState } from "@/lib/games/brass-birmingham/types";
-import type { ClientMessage } from "@/lib/games/brass-birmingham/messages";
+import { useDuneSessionStore } from "@/stores/dune-session";
+import type { DuneGameState } from "@/lib/games/dune-imperium/types";
+import type { ClientMessage } from "@/lib/games/dune-imperium/messages";
 import type { Session } from "@/lib/games/types";
 import { type TabId, BottomNav } from "./components/BottomNav";
 import { Dashboard } from "./components/Dashboard";
-import { IndustryGrid } from "./components/IndustryGrid";
 import { GameSummary } from "./components/GameSummary";
 import { GuideTab } from "./components/GuideTab";
 import { GameSessionShell } from "@/components/GameSessionShell";
 import { useI18n } from "@/lib/i18n";
 
-function BrassGameView({
+function DuneGameView({
   session,
   gameState,
   playerId,
@@ -21,7 +20,7 @@ function BrassGameView({
   onSend,
 }: {
   session: Session;
-  gameState: BrassGameState;
+  gameState: DuneGameState;
   playerId: string;
   isHost: boolean;
   onSend: (msg: ClientMessage) => void;
@@ -41,15 +40,6 @@ function BrassGameView({
           />
         )}
 
-        {activeTab === "industry" && (
-          <IndustryGrid
-            session={session}
-            gameState={gameState}
-            playerId={playerId}
-            onSend={onSend}
-          />
-        )}
-
         {activeTab === "guide" && (
           <GuideTab
             session={session}
@@ -65,20 +55,21 @@ function BrassGameView({
   );
 }
 
-export default function BrassSessionPage() {
+export default function DuneSessionPage() {
   const { t } = useI18n();
-  const store = useBrassSessionStore();
+  const store = useDuneSessionStore();
 
   return (
     <GameSessionShell
-      gameSlug="brass-birmingham"
-      gameTitle={t.game.title}
+      gameSlug="dune-imperium"
+      gameTitle={t.dune.game.title}
+      party="dune_imperium"
       store={store}
-      isGameOver={(gs) => (gs as BrassGameState)?.phase === "game-over"}
+      isGameOver={(gs) => (gs as DuneGameState)?.phase === "game-over"}
       renderGame={(props) => (
-        <BrassGameView
+        <DuneGameView
           session={props.session}
-          gameState={props.gameState as BrassGameState}
+          gameState={props.gameState as DuneGameState}
           playerId={props.playerId}
           isHost={props.isHost}
           onSend={props.onSend}
@@ -87,7 +78,7 @@ export default function BrassSessionPage() {
       renderGameOver={(props) => (
         <GameSummary
           session={props.session}
-          gameState={props.gameState as BrassGameState}
+          gameState={props.gameState as DuneGameState}
         />
       )}
     />

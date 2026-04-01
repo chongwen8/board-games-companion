@@ -3,5 +3,5 @@
 import { GameHistoryPage } from "@/components/GameHistoryPage";
 
 export default function HistoryPage() {
-  return <GameHistoryPage gameSlug="brass-birmingham" />;
+  return <GameHistoryPage gameSlug="dune-imperium" />;
 }
