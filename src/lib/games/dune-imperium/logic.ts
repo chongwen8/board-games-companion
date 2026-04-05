@@ -1,5 +1,5 @@
 import type { FactionId, DunePlayerState } from "./types";
-import { FACTIONS } from "./constants";
+import { FACTIONS, MAX_SPY, TROOP_STRENGTH, DREADNOUGHT_STRENGTH } from "./constants";
 import type { FactionReward } from "./constants";
 
 /**
@@ -15,9 +15,10 @@ export function resolveAllianceHolder(
   faction: FactionId,
   playerStates: Record<string, DunePlayerState>,
   currentHolder: string | null,
-  turnOrder: string[]
+  turnOrder: string[],
+  factions = FACTIONS
 ): string | null {
-  const def = FACTIONS[faction];
+  const def = factions[faction];
   if (!def) return null;
 
   let bestPid: string | null = null;
@@ -53,9 +54,10 @@ export function resolveAllianceHolder(
 export function getThresholdRewards(
   faction: FactionId,
   oldLevel: number,
-  newLevel: number
+  newLevel: number,
+  factions = FACTIONS
 ): FactionReward[] {
-  const def = FACTIONS[faction];
+  const def = factions[faction];
   if (!def || newLevel <= oldLevel) return [];
 
   return def.thresholds
@@ -71,9 +73,10 @@ export function getThresholdRewards(
 export function getThresholdPenalties(
   faction: FactionId,
   oldLevel: number,
-  newLevel: number
+  newLevel: number,
+  factions = FACTIONS
 ): FactionReward[] {
-  const def = FACTIONS[faction];
+  const def = factions[faction];
   if (!def || newLevel >= oldLevel) return [];
 
   return def.thresholds
@@ -101,5 +104,55 @@ export function applyReward(ps: DunePlayerState, reward: FactionReward): void {
     case "intrigue":
       ps.intrigue = Math.max(0, ps.intrigue + reward.amount);
       break;
+    case "spy":
+      if (ps.spy !== undefined) {
+        ps.spy = Math.max(0, Math.min(MAX_SPY, ps.spy + reward.amount));
+      }
+      break;
   }
+}
+
+// --- Combat ---
+
+export interface CombatResult {
+  playerId: string;
+  troops: number;
+  bonus: number;
+  strength: number;
+}
+
+/** Calculate combat strength: troops × 2 + bonus (dreadnoughts, sandworms, cards, etc.) */
+export function getCombatStrength(ps: DunePlayerState): number {
+  return (ps.combat ?? 0) * TROOP_STRENGTH + (ps.combatBonus ?? 0);
+}
+
+/** Rank players by combat strength descending. Only includes players with strength > 0. */
+export function rankCombatResults(
+  playerStates: Record<string, DunePlayerState>,
+  turnOrder: string[]
+): CombatResult[] {
+  return turnOrder
+    .map((playerId) => {
+      const ps = playerStates[playerId];
+      if (!ps) return null;
+      return {
+        playerId,
+        troops: ps.combat ?? 0,
+        bonus: ps.combatBonus ?? 0,
+        strength: getCombatStrength(ps),
+      };
+    })
+    .filter((r): r is CombatResult => r !== null && r.strength > 0)
+    .sort((a, b) => b.strength - a.strength);
+}
+
+/** Check if any player has troops or bonus committed to combat. */
+export function hasCombatParticipants(
+  playerStates: Record<string, DunePlayerState>,
+  turnOrder: string[]
+): boolean {
+  return turnOrder.some((pid) => {
+    const ps = playerStates[pid];
+    return ps && ((ps.combat ?? 0) > 0 || (ps.combatBonus ?? 0) > 0);
+  });
 }

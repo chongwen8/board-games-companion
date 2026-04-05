@@ -4,7 +4,8 @@
   "main": "party/brass-birmingham.ts",
   "parties": {
     "lobby": "party/lobby.ts",
-    "dune_imperium": "party/dune-imperium.ts"
+    "dune_imperium": "party/dune-imperium.ts",
+    "dune_uprising": "party/dune-imperium-uprising.ts"
   },
   "compatibilityDate": "2024-01-01"
 }

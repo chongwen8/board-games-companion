@@ -17,6 +17,14 @@ export const GAMES: Record<string, GameDefinition> = {
     description:
       "Track resources, faction influence, and alliances during your Dune: Imperium session.",
   },
+  "dune-imperium-uprising": {
+    slug: "dune-imperium-uprising",
+    name: "Dune: Imperium Uprising",
+    minPlayers: 2,
+    maxPlayers: 4,
+    description:
+      "Track resources, spies, faction influence, and alliances during your Dune: Imperium Uprising session.",
+  },
 };
 
 export function getGame(slug: string): GameDefinition | undefined {

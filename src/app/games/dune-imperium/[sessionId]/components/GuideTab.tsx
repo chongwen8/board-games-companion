@@ -42,6 +42,20 @@ function describeAction(
       return t.dune.history.actions.adjustedVp(getName(action.playerId), action.delta);
     case "ADJUST_INTRIGUE":
       return t.dune.history.actions.adjustedIntrigue(getName(action.playerId), action.delta);
+    case "ADJUST_SPY":
+      return t.dune.history.actions.adjustedSpy(getName(action.playerId), action.delta);
+    case "ADJUST_DREADNOUGHT":
+      return t.dune.history.actions.adjustedDreadnought(getName(action.playerId), action.delta);
+    case "ADJUST_GARRISON":
+      return t.dune.history.actions.adjustedGarrison(getName(action.playerId), action.delta);
+    case "ADJUST_COMBAT_TROOPS":
+      return t.dune.history.actions.adjustedCombatTroops(getName(action.playerId), action.delta);
+    case "ADJUST_COMBAT_BONUS":
+      return t.dune.history.actions.adjustedCombatBonus(getName(action.playerId), action.delta);
+    case "BEGIN_COMBAT":
+      return t.dune.history.actions.combatStarted;
+    case "RESOLVE_COMBAT":
+      return t.dune.history.actions.combatResolved;
     case "ADJUST_INFLUENCE": {
       const factionName = t.dune.factions[action.faction as FactionId] ?? action.faction;
       return t.dune.history.actions.adjustedInfluence(getName(action.playerId), factionName, action.delta);

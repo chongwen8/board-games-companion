@@ -4,6 +4,27 @@ const zh: Translations = {
   language: "ZH",
   languageName: "\u4E2D\u6587",
 
+  home: {
+    title: "桌游助手",
+    subtitle: "选择一款游戏开始",
+    players: "名玩家",
+    games: {
+      "brass-birmingham": { description: "在 Brass: Birmingham 对局中追踪支出、行动顺序和工业。" },
+      "dune-imperium": { description: "在 Dune: Imperium 对局中追踪资源、阵营影响力和联盟。" },
+      "dune-imperium-uprising": { description: "在 Dune: Imperium Uprising 对局中追踪资源、间谍、阵营影响力和联盟。" },
+    },
+  },
+
+  common: {
+    activeSession: "你有一个进行中的会话",
+    rejoin: "重新加入",
+    dismiss: "关闭",
+    endSessionExit: "结束会话并退出",
+    leaveSession: "离开会话",
+    newGameSamePlayers: "新游戏（同玩家）",
+    exitToLobby: "退出到大厅",
+  },
+
   nav: {
     dashboard: "\u603B\u89C8",
     spend: "\u652F\u51FA",
@@ -133,9 +154,8 @@ const zh: Translations = {
     ],
     finalScoring: "\u6700\u7EC8\u8BA1\u5206",
     finalScoringItems: [
-      "\u8BA1\u7B97\u94FE\u63A5\u548C\u5DF2\u5EFA\u5DE5\u4E1A\u7684 VP",
-      "\u6BCF\u5269\u4F59 \u00A310 = 1 VP",
-      "\u6263\u9664\u8D37\u6B3E VP\uFF08\u6BCF \u00A310 \u8D37\u6B3E\u6263 1 VP\uFF09",
+      "计算链接和已翻转工业片的 VP",
+      "平局判定：收入等级最高者优先，其次为剩余资金最多者",
     ],
     endCanalEraBtn: "\u7ED3\u675F\u8FD0\u6CB3\u65F6\u4EE3",
     endGameBtn: "\u7ED3\u675F\u6E38\u620F",
@@ -146,6 +166,8 @@ const zh: Translations = {
     confirmEndRoundCollect: "\u786E\u8BA4 \u2014 \u6536\u53D6\u6536\u5165\u5E76\u91CD\u65B0\u6392\u5E8F",
     waitingForHost: "\u7B49\u5F85\u623F\u4E3B...",
     waitingForHostAdvance: "\u7B49\u5F85\u623F\u4E3B\u63A8\u8FDB\u56DE\u5408...",
+    finalRound: "最终回合",
+    finalRoundWarning: "游戏即将结束。请确认所有 VP、收入和资金正确无误。此操作无法撤销。",
   },
 
   mistakeLevel: {
@@ -186,6 +208,7 @@ const zh: Translations = {
     gameStats: "\u6E38\u620F\u7EDF\u8BA1",
     players: "\u73A9\u5BB6",
     actionsTaken: "\u64CD\u4F5C\u6B21\u6570",
+    tiebreaker: "平局判定：收入等级，其次为资金",
   },
 
   rules: {
@@ -232,6 +255,7 @@ const zh: Translations = {
   dune: {
     game: {
       title: "沙丘：帝国",
+      titleUprising: "沙丘：帝国 起义",
       subtitle: "桌游辅助工具",
       round: "回合",
     },
@@ -241,6 +265,8 @@ const zh: Translations = {
       water: "水",
       vp: "VP",
       intrigue: "阴谋",
+      spy: "间谍",
+      dreadnought: "无畏舰",
     },
     factions: {
       emperor: "皇帝",
@@ -261,6 +287,20 @@ const zh: Translations = {
       endGame: "结束游戏",
       confirmEndGame: "确认 — 结束游戏",
       waitingForHost: "等待房主推进回合...",
+      finalRound: "最终回合",
+      finalRoundWarning: "游戏即将结束。请确认所有 VP 和资源正确无误。此操作无法撤销。",
+      troops: "军队",
+      garrison: "驻军",
+      combatTroops: "战斗",
+      supply: "补给",
+      dreadnoughtCombat: "无畏舰",
+      combatBonus: "加成",
+      combatStrength: "战力",
+      combatResults: "战斗结果",
+      noCombat: "无战斗参与者",
+      confirmResolve: "确认 — 结算战斗并进入下一回合",
+      combatResolveDesc: "战斗区域的军队返回补给。无畏舰战斗和加成重置。",
+      skipCombat: "跳过战斗并进入下一回合",
     },
     history: {
       actions: {
@@ -269,6 +309,14 @@ const zh: Translations = {
         adjustedWater: (name: string, delta: number) => `${name} 水 ${delta >= 0 ? "+" : ""}${delta}`,
         adjustedVp: (name: string, delta: number) => `${name} VP ${delta >= 0 ? "+" : ""}${delta}`,
         adjustedIntrigue: (name: string, delta: number) => `${name} 阴谋 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedSpy: (name: string, delta: number) => `${name} 间谍 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedDreadnought: (name: string, delta: number) => `${name} 无畏舰 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedGarrison: (name: string, delta: number) => `${name} 驻军 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedCombatTroops: (name: string, delta: number) => `${name} 战斗军队 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedDreadnoughtCombat: (name: string, delta: number) => `${name} 无畏舰战斗 ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedCombatBonus: (name: string, delta: number) => `${name} 战斗加成 ${delta >= 0 ? "+" : ""}${delta}`,
+        combatStarted: "战斗结算开始",
+        combatResolved: "战斗已结算 — 回合推进",
         adjustedInfluence: (name: string, faction: string, delta: number) =>
           `${name} ${faction} 影响力 ${delta >= 0 ? "+" : ""}${delta}`,
         allianceGained: (name: string, faction: string) => `${name} 获得了 ${faction} 联盟`,
@@ -284,6 +332,7 @@ const zh: Translations = {
       finalStandings: "最终排名",
       alliances: "联盟",
       gameStats: "游戏统计",
+      tiebreaker: "平局判定：香料，其次为索拉里、水、驻军",
     },
     tips: {
       title: "常见提示",

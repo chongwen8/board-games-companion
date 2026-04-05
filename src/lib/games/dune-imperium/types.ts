@@ -2,7 +2,9 @@
 // Faction IDs — Uprising can extend this union with additional factions
 export type FactionId = "emperor" | "spacingGuild" | "beneGesserit" | "fremen";
 
-export type DunePhase = "playing" | "game-over";
+export type DunePhase = "playing" | "combat" | "game-over";
+
+export type TroopLocation = "supply" | "garrison" | "combat";
 
 export interface FactionInfluence {
   level: number;       // 0 to maxInfluence (typically 6)
@@ -15,6 +17,16 @@ export interface DunePlayerState {
   water: number;
   vp: number;
   intrigue: number;
+  /** Spies deployed on board (Uprising only). Omitted in base game. */
+  spy?: number;
+  dreadnought: number;
+  /** Troops in garrison (safe, not in combat) */
+  garrison: number;
+  /** Troops committed to combat area */
+  combat: number;
+  // supply is derived: MAX_TROOPS - garrison - combat
+  /** Combat strength bonus (dreadnoughts ×3, sandworms, cards, etc.) */
+  combatBonus: number;
   factions: Record<FactionId, FactionInfluence>;
 }
 
@@ -44,7 +56,14 @@ export type DuneAction =
   | { type: "ADJUST_WATER"; playerId: string; delta: number }
   | { type: "ADJUST_VP"; playerId: string; delta: number }
   | { type: "ADJUST_INTRIGUE"; playerId: string; delta: number }
+  | { type: "ADJUST_SPY"; playerId: string; delta: number }
+  | { type: "ADJUST_DREADNOUGHT"; playerId: string; delta: number }
+  | { type: "ADJUST_GARRISON"; playerId: string; delta: number }
+  | { type: "ADJUST_COMBAT_TROOPS"; playerId: string; delta: number }
+  | { type: "ADJUST_COMBAT_BONUS"; playerId: string; delta: number }
   | { type: "ADJUST_INFLUENCE"; playerId: string; faction: FactionId; delta: number }
+  | { type: "BEGIN_COMBAT" }
+  | { type: "RESOLVE_COMBAT" }
   | { type: "NEXT_ROUND" }
   | { type: "END_GAME" }
   | { type: "UNDO" };

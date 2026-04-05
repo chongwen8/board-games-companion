@@ -10,7 +10,7 @@ import {
   setPlayerName,
 } from "@/lib/utils/player-id";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { LogOut, ArrowRight } from "lucide-react";
+import { LogOut, ArrowRight, ArrowLeft } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getActiveSession, clearActiveSession } from "@/lib/utils/active-session";
 import { useI18n } from "@/lib/i18n";
@@ -94,7 +94,12 @@ export function GameLobbyPage({ gameSlug, gameTitle, gameSubtitle }: GameLobbyPa
   return (
     <main className="flex min-h-svh flex-col items-center justify-center p-6">
       <div className="mb-6 flex w-full max-w-sm items-center justify-between">
-        <div />
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-1 text-xs text-muted-foreground active:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+        </button>
         <LanguageSwitcher />
       </div>
 
@@ -105,7 +110,7 @@ export function GameLobbyPage({ gameSlug, gameTitle, gameSubtitle }: GameLobbyPa
         {/* Rejoin active session */}
         {activeSession && (
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 space-y-3">
-            <p className="text-sm font-medium">You have an active session</p>
+            <p className="text-sm font-medium">{t.common.activeSession}</p>
             <div className="flex gap-2">
               <Button
                 onClick={() =>
@@ -117,7 +122,7 @@ export function GameLobbyPage({ gameSlug, gameTitle, gameSubtitle }: GameLobbyPa
                 className="flex-1 rounded-lg"
               >
                 <ArrowRight className="mr-1.5 h-3.5 w-3.5" />
-                Rejoin
+                {t.common.rejoin}
               </Button>
               <Button
                 variant="outline"
@@ -128,7 +133,7 @@ export function GameLobbyPage({ gameSlug, gameTitle, gameSubtitle }: GameLobbyPa
                   window.location.reload();
                 }}
               >
-                Dismiss
+                {t.common.dismiss}
               </Button>
             </div>
           </div>

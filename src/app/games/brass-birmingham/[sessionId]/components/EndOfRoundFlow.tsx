@@ -155,6 +155,13 @@ export function EndOfRoundFlow({
         </div>
       )}
 
+      {isLastRound && gameState.era === "rail" && (
+        <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 space-y-1">
+          <p className="font-semibold">{t.endOfRound.finalRound}</p>
+          <p>{t.endOfRound.finalRoundWarning}</p>
+        </div>
+      )}
+
       {/* Action button */}
       {isHost && (
         <div className="space-y-2">

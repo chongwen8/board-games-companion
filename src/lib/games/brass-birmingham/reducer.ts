@@ -190,14 +190,22 @@ export function brassReducer(
         );
         draft.turnOrder = eraNewOrder;
 
-        // 4. Transition to Rail Era
-        draft.era = "rail";
-        draft.round = 1;
-        draft.activePlayerIndex = 0;
-        draft.actionsRemainingForActivePlayer = 1;
-        draft.phase = "actions";
-        for (const pid of draft.turnOrder) {
-          draft.roundSpending[pid] = 0;
+        // 4. Transition to Rail Era or end game
+        if (draft.era === "rail") {
+          // Rail era last round → game over — free memory
+          draft.phase = "game-over";
+          draft._undoStack = [];
+          draft.history = [];
+        } else {
+          // Canal → Rail transition
+          draft.era = "rail";
+          draft.round = 1;
+          draft.activePlayerIndex = 0;
+          draft.actionsRemainingForActivePlayer = 1;
+          draft.phase = "actions";
+          for (const pid of draft.turnOrder) {
+            draft.roundSpending[pid] = 0;
+          }
         }
         break;
       }
@@ -289,6 +297,8 @@ export function brassReducer(
 
       case "END_GAME": {
         draft.phase = "game-over";
+        draft._undoStack = [];
+        draft.history = [];
         break;
       }
     }

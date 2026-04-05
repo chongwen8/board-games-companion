@@ -1,7 +1,7 @@
 import type * as Party from "partykit/server";
 import { BaseGameServer } from "./shared/base-game-server";
 import { duneReducer } from "../src/lib/games/dune-imperium/reducer";
-import { FACTION_IDS, STARTING_RESOURCES, getStartingVp } from "../src/lib/games/dune-imperium/constants";
+import { FACTION_IDS, STARTING_RESOURCES, UPRISING_FACTIONS, getStartingVp } from "../src/lib/games/dune-imperium/constants";
 import type { DuneGameState, DunePlayerState, FactionId } from "../src/lib/games/dune-imperium/types";
 
 function createInitialPlayerState(playerCount: number): DunePlayerState {
@@ -15,6 +15,7 @@ function createInitialPlayerState(playerCount: number): DunePlayerState {
     water: STARTING_RESOURCES.water,
     vp: getStartingVp(playerCount),
     intrigue: 0,
+    spy: 0,
     dreadnought: 0,
     garrison: 0,
     combat: 0,
@@ -23,8 +24,8 @@ function createInitialPlayerState(playerCount: number): DunePlayerState {
   };
 }
 
-export default class DuneImperiumServer extends BaseGameServer {
-  gameSlug = "dune-imperium";
+export default class DuneUprisingServer extends BaseGameServer {
+  gameSlug = "dune-imperium-uprising";
 
   createInitialGameState(playerIds: string[]): DuneGameState {
     const playerCount = playerIds.length;
@@ -51,7 +52,7 @@ export default class DuneImperiumServer extends BaseGameServer {
   }
 
   applyAction(state: DuneGameState, action: unknown): DuneGameState {
-    return duneReducer(state, action as Parameters<typeof duneReducer>[1]);
+    return duneReducer(state, action as Parameters<typeof duneReducer>[1], UPRISING_FACTIONS);
   }
 
   stripUndoStack(state: DuneGameState): DuneGameState {
@@ -61,4 +62,4 @@ export default class DuneImperiumServer extends BaseGameServer {
   }
 }
 
-DuneImperiumServer satisfies Party.Worker;
+DuneUprisingServer satisfies Party.Worker;

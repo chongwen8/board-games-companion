@@ -1,6 +1,15 @@
 export interface Translations {
   language: string;
   languageName: string;
+  home: {
+    title: string; subtitle: string; players: string;
+    games: Record<string, { description: string }>;
+  };
+  common: {
+    activeSession: string; rejoin: string; dismiss: string;
+    endSessionExit: string; leaveSession: string;
+    newGameSamePlayers: string; exitToLobby: string;
+  };
   nav: { dashboard: string; spend: string; industry: string; more: string; guide: string };
   game: {
     title: string; subtitle: string; canalEra: string; railEra: string;
@@ -43,6 +52,7 @@ export interface Translations {
     confirmEndCanalEra: string; confirmEndGame: string;
     endRoundCollect: string; confirmEndRoundCollect: string;
     waitingForHost: string; waitingForHostAdvance: string;
+    finalRound: string; finalRoundWarning: string;
   };
   mistakeLevel: { newbie: string; intermediate: string; experienced: string };
   history: {
@@ -64,7 +74,7 @@ export interface Translations {
   summary: {
     gameOver: string; finalScores: string; industryLinks: string;
     moneyBonus: string; loanPenalty: string; gameStats: string;
-    players: string; actionsTaken: string;
+    players: string; actionsTaken: string; tiebreaker: string;
   };
   rules: {
     title: string; searchPlaceholder: string;
@@ -81,8 +91,8 @@ export interface Translations {
   };
   // --- Dune: Imperium ---
   dune: {
-    game: { title: string; subtitle: string; round: string };
-    resources: { spice: string; solari: string; water: string; vp: string; intrigue: string };
+    game: { title: string; titleUprising: string; subtitle: string; round: string };
+    resources: { spice: string; solari: string; water: string; vp: string; intrigue: string; spy: string; dreadnought: string };
     factions: {
       emperor: string; spacingGuild: string; beneGesserit: string; fremen: string;
     };
@@ -92,7 +102,11 @@ export interface Translations {
     };
     dashboard: {
       nextRound: string; confirmNextRound: string; endGame: string; confirmEndGame: string;
-      waitingForHost: string;
+      waitingForHost: string; finalRound: string; finalRoundWarning: string;
+      troops: string; garrison: string; combatTroops: string; supply: string;
+      dreadnoughtCombat: string; combatBonus: string; combatStrength: string;
+      combatResults: string; noCombat: string; confirmResolve: string;
+      combatResolveDesc: string; skipCombat: string;
     };
     history: {
       actions: {
@@ -101,6 +115,14 @@ export interface Translations {
         adjustedWater: (name: string, delta: number) => string;
         adjustedVp: (name: string, delta: number) => string;
         adjustedIntrigue: (name: string, delta: number) => string;
+        adjustedSpy: (name: string, delta: number) => string;
+        adjustedDreadnought: (name: string, delta: number) => string;
+        adjustedGarrison: (name: string, delta: number) => string;
+        adjustedCombatTroops: (name: string, delta: number) => string;
+        adjustedDreadnoughtCombat: (name: string, delta: number) => string;
+        adjustedCombatBonus: (name: string, delta: number) => string;
+        combatStarted: string;
+        combatResolved: string;
         adjustedInfluence: (name: string, faction: string, delta: number) => string;
         allianceGained: (name: string, faction: string) => string;
         allianceLost: (name: string, faction: string) => string;
@@ -113,6 +135,7 @@ export interface Translations {
     summary: {
       gameOver: string; finalStandings: string;
       alliances: string; gameStats: string;
+      tiebreaker: string;
     };
     tips: {
       title: string; subtitle: string;
@@ -138,6 +161,29 @@ const en: Translations = {
   // Common
   language: "EN",
   languageName: "English",
+
+  // Home page
+  home: {
+    title: "Board Games Companion",
+    subtitle: "Pick a game to get started",
+    players: "players",
+    games: {
+      "brass-birmingham": { description: "Track spending, turn order, and industry during your Brass: Birmingham session." },
+      "dune-imperium": { description: "Track resources, faction influence, and alliances during your Dune: Imperium session." },
+      "dune-imperium-uprising": { description: "Track resources, spies, faction influence, and alliances during your Dune: Imperium Uprising session." },
+    },
+  },
+
+  // Shared strings
+  common: {
+    activeSession: "You have an active session",
+    rejoin: "Rejoin",
+    dismiss: "Dismiss",
+    endSessionExit: "End Session & Exit",
+    leaveSession: "Leave Session",
+    newGameSamePlayers: "New Game (Same Players)",
+    exitToLobby: "Exit to Lobby",
+  },
 
   // Navigation
   nav: {
@@ -278,9 +324,8 @@ const en: Translations = {
     ],
     finalScoring: "Final Scoring",
     finalScoringItems: [
-      "Score VP for links and built industries",
-      "Each \u00A310 remaining = 1 VP",
-      "Subtract VP for loans (1 VP per \u00A310 owed)",
+      "Score VP for your link tiles and flipped industry tiles",
+      "Tiebreaker: highest income level, then most money remaining",
     ],
     endCanalEraBtn: "End Canal Era",
     endGameBtn: "End Game",
@@ -291,6 +336,8 @@ const en: Translations = {
     confirmEndRoundCollect: "Confirm \u2014 Collect Income & Reorder",
     waitingForHost: "Waiting for host...",
     waitingForHostAdvance: "Waiting for host to advance the round...",
+    finalRound: "Final Round",
+    finalRoundWarning: "This will end the game. Make sure all VP, income, and money are correct. This cannot be undone.",
   },
 
   // Mistake levels
@@ -334,6 +381,7 @@ const en: Translations = {
     gameStats: "Game Stats",
     players: "Players",
     actionsTaken: "Actions taken",
+    tiebreaker: "Tiebreaker: income level, then money",
   },
 
   // Rules
@@ -382,6 +430,7 @@ const en: Translations = {
   dune: {
     game: {
       title: "Dune: Imperium",
+      titleUprising: "Dune: Imperium Uprising",
       subtitle: "Companion app for in-person play",
       round: "Round",
     },
@@ -391,6 +440,8 @@ const en: Translations = {
       water: "Water",
       vp: "VP",
       intrigue: "Intrigue",
+      spy: "Spy",
+      dreadnought: "Dreadnought",
     },
     factions: {
       emperor: "Emperor",
@@ -411,6 +462,20 @@ const en: Translations = {
       endGame: "End Game",
       confirmEndGame: "Confirm — End Game",
       waitingForHost: "Waiting for host to advance the round...",
+      finalRound: "Final Round",
+      finalRoundWarning: "This will end the game. Make sure all VP and resources are correct. This cannot be undone.",
+      troops: "Troops",
+      garrison: "Garrison",
+      combatTroops: "Combat",
+      supply: "Supply",
+      dreadnoughtCombat: "Dreadnought",
+      combatBonus: "Bonus",
+      combatStrength: "Strength",
+      combatResults: "Combat Results",
+      noCombat: "No combat participants",
+      confirmResolve: "Confirm — Resolve Combat & Next Round",
+      combatResolveDesc: "Troops in combat return to supply. Dreadnought combat and bonus reset.",
+      skipCombat: "Skip Combat & Next Round",
     },
     history: {
       actions: {
@@ -419,6 +484,14 @@ const en: Translations = {
         adjustedWater: (name: string, delta: number) => `${name} water ${delta >= 0 ? "+" : ""}${delta}`,
         adjustedVp: (name: string, delta: number) => `${name} VP ${delta >= 0 ? "+" : ""}${delta}`,
         adjustedIntrigue: (name: string, delta: number) => `${name} intrigue ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedSpy: (name: string, delta: number) => `${name} spy ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedDreadnought: (name: string, delta: number) => `${name} dreadnought ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedGarrison: (name: string, delta: number) => `${name} garrison ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedCombatTroops: (name: string, delta: number) => `${name} combat troops ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedDreadnoughtCombat: (name: string, delta: number) => `${name} dreadnought combat ${delta >= 0 ? "+" : ""}${delta}`,
+        adjustedCombatBonus: (name: string, delta: number) => `${name} combat bonus ${delta >= 0 ? "+" : ""}${delta}`,
+        combatStarted: "Combat resolution started",
+        combatResolved: "Combat resolved — round advanced",
         adjustedInfluence: (name: string, faction: string, delta: number) =>
           `${name} ${faction} influence ${delta >= 0 ? "+" : ""}${delta}`,
         allianceGained: (name: string, faction: string) => `${name} gained ${faction} alliance`,
@@ -434,6 +507,7 @@ const en: Translations = {
       finalStandings: "Final Standings",
       alliances: "Alliances",
       gameStats: "Game Stats",
+      tiebreaker: "Tiebreaker: spice, then solari, then water, then garrison",
     },
     tips: {
       title: "Common Tips",

@@ -246,7 +246,7 @@ function SessionContent({
               size="lg"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
-              New Game (Same Players)
+              {t.common.newGameSamePlayers}
             </Button>
           )}
           <Button
@@ -256,7 +256,7 @@ function SessionContent({
             size="lg"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Exit to Lobby
+            {t.common.exitToLobby}
           </Button>
         </div>
       </div>
