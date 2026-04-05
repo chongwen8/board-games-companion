@@ -30,7 +30,7 @@ function BrassGameView({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-lg px-4 pt-14 pb-20">
+      <div className="mx-auto w-full max-w-lg px-4 pt-14 pb-28">
         {activeTab === "dashboard" && (
           <Dashboard
             session={session}
