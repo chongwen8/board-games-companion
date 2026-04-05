@@ -3,7 +3,7 @@ export interface Translations {
   languageName: string;
   home: {
     title: string; subtitle: string; players: string;
-    games: Record<string, { description: string }>;
+    games: Record<string, { name: string; description: string }>;
   };
   common: {
     activeSession: string; rejoin: string; dismiss: string;
@@ -168,9 +168,9 @@ const en: Translations = {
     subtitle: "Pick a game to get started",
     players: "players",
     games: {
-      "brass-birmingham": { description: "Track spending, turn order, and industry during your Brass: Birmingham session." },
-      "dune-imperium": { description: "Track resources, faction influence, and alliances during your Dune: Imperium session." },
-      "dune-imperium-uprising": { description: "Track resources, spies, faction influence, and alliances during your Dune: Imperium Uprising session." },
+      "brass-birmingham": { name: "Brass: Birmingham", description: "Track spending, turn order, and industry during your Brass: Birmingham session." },
+      "dune-imperium": { name: "Dune: Imperium", description: "Track resources, faction influence, and alliances during your Dune: Imperium session." },
+      "dune-imperium-uprising": { name: "Dune: Imperium Uprising", description: "Track resources, spies, faction influence, and alliances during your Dune: Imperium Uprising session." },
     },
   },
 

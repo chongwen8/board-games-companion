@@ -9,9 +9,9 @@ const zh: Translations = {
     subtitle: "选择一款游戏开始",
     players: "名玩家",
     games: {
-      "brass-birmingham": { description: "在 Brass: Birmingham 对局中追踪支出、行动顺序和工业。" },
-      "dune-imperium": { description: "在 Dune: Imperium 对局中追踪资源、阵营影响力和联盟。" },
-      "dune-imperium-uprising": { description: "在 Dune: Imperium Uprising 对局中追踪资源、间谍、阵营影响力和联盟。" },
+      "brass-birmingham": { name: "工业革命：伯明翰", description: "在工业革命：伯明翰对局中追踪支出、行动顺序和工业。" },
+      "dune-imperium": { name: "沙丘：帝国", description: "在沙丘：帝国对局中追踪资源、阵营影响力和联盟。" },
+      "dune-imperium-uprising": { name: "沙丘：帝国起义", description: "在沙丘：帝国起义对局中追踪资源、间谍、阵营影响力和联盟。" },
     },
   },
 
@@ -34,7 +34,7 @@ const zh: Translations = {
   },
 
   game: {
-    title: "\u5E03\u62C9\u683C\uFF1A\u4F2F\u660E\u7FF0",
+    title: "工业革命：伯明翰",
     subtitle: "\u684C\u6E38\u8F85\u52A9\u5DE5\u5177",
     canalEra: "\u8FD0\u6CB3\u65F6\u4EE3",
     railEra: "\u94C1\u8DEF\u65F6\u4EE3",
@@ -255,7 +255,7 @@ const zh: Translations = {
   dune: {
     game: {
       title: "沙丘：帝国",
-      titleUprising: "沙丘：帝国 起义",
+      titleUprising: "沙丘：帝国起义",
       subtitle: "桌游辅助工具",
       round: "回合",
     },

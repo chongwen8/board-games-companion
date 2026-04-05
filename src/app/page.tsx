@@ -21,7 +21,7 @@ export default function HomePage() {
             href={`/games/${game.slug}`}
             className="rounded-lg border border-border bg-card p-6 transition-colors hover:bg-accent"
           >
-            <h2 className="text-xl font-semibold">{game.name}</h2>
+            <h2 className="text-xl font-semibold">{t.home.games[game.slug]?.name ?? game.name}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {t.home.games[game.slug]?.description ?? game.description}
             </p>

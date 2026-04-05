@@ -330,6 +330,25 @@ function SessionContent({
 
 export function GameSessionShell(props: GameSessionShellProps) {
   const { t } = useI18n();
+  const store = props.store;
+  const isActive = store.session?.status === "active" && store.gameState;
+
+  // Active game view manages its own layout (fixed top bar + bottom nav)
+  if (isActive) {
+    return (
+      <Suspense
+        fallback={
+          <main className="flex min-h-svh flex-col items-center justify-center p-6">
+            <p className="text-muted-foreground">{t.game.loadingSession}</p>
+          </main>
+        }
+      >
+        <SessionContent {...props} />
+      </Suspense>
+    );
+  }
+
+  // Lobby + game-over use centered layout
   return (
     <main className="flex min-h-svh flex-col items-center justify-center p-6">
       <Suspense
