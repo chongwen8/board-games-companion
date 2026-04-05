@@ -19,15 +19,18 @@ const COLOR_CLASSES: Record<string, string> = {
 
 interface ResourceRowProps {
   label: string;
+  icon?: string;
   value: number;
   onAdjust: (delta: number) => void;
   showLargeButtons?: boolean;
 }
 
-function ResourceRow({ label, value, onAdjust, showLargeButtons = false }: ResourceRowProps) {
+function ResourceRow({ label, icon, value, onAdjust, showLargeButtons = false }: ResourceRowProps) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className="text-xs font-medium text-muted-foreground w-16">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground w-20 flex items-center gap-1">
+        {icon && <span>{icon}</span>}{label}
+      </span>
       <span className="text-lg font-bold tabular-nums flex-1 text-center">{value}</span>
       <div className="flex items-center gap-1">
         <Button variant="outline" size="icon-xs" onClick={() => onAdjust(-1)} className="h-7 w-7">
@@ -53,15 +56,18 @@ function ResourceRow({ label, value, onAdjust, showLargeButtons = false }: Resou
 
 interface CappedResourceRowProps {
   label: string;
+  icon?: string | React.ReactNode;
   value: number;
   max: number;
   onAdjust: (delta: number) => void;
 }
 
-function CappedResourceRow({ label, value, max, onAdjust }: CappedResourceRowProps) {
+function CappedResourceRow({ label, icon, value, max, onAdjust }: CappedResourceRowProps) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className="text-xs font-medium text-muted-foreground w-16">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground w-20 flex items-center gap-1">
+        {icon && <span>{icon}</span>}{label}
+      </span>
       <span className="text-lg font-bold tabular-nums flex-1 text-center">
         {value}<span className="text-xs font-normal text-muted-foreground">/{max}</span>
       </span>
@@ -104,33 +110,39 @@ export function PlayerCardFull({ player, playerState, onSend }: PlayerCardFullPr
       <div className="px-4 py-3 space-y-1">
         {/* Resources */}
         <ResourceRow
+          icon="🌶"
           label={t.dune.resources.spice}
           value={playerState.spice}
           onAdjust={(delta) => sendAction({ type: "ADJUST_SPICE", playerId: player.id, delta })}
         />
         <ResourceRow
+          icon="💰"
           label={t.dune.resources.solari}
           value={playerState.solari}
           onAdjust={(delta) => sendAction({ type: "ADJUST_SOLARI", playerId: player.id, delta })}
         />
         <ResourceRow
+          icon="💧"
           label={t.dune.resources.water}
           value={playerState.water}
           onAdjust={(delta) => sendAction({ type: "ADJUST_WATER", playerId: player.id, delta })}
         />
         <ResourceRow
+          icon="⭐"
           label={t.dune.resources.vp}
           value={playerState.vp}
           onAdjust={(delta) => sendAction({ type: "ADJUST_VP", playerId: player.id, delta })}
           showLargeButtons
         />
         <ResourceRow
+          icon="🃏"
           label={t.dune.resources.intrigue}
           value={playerState.intrigue ?? 0}
           onAdjust={(delta) => sendAction({ type: "ADJUST_INTRIGUE", playerId: player.id, delta })}
         />
         {/* Dreadnought — both games, max 2 */}
         <CappedResourceRow
+          icon={<Image src="/icons/dreadnought.png" alt="DN" width={16} height={16} />}
           label={t.dune.resources.dreadnought}
           value={playerState.dreadnought ?? 0}
           max={MAX_DREADNOUGHT}
@@ -139,6 +151,7 @@ export function PlayerCardFull({ player, playerState, onSend }: PlayerCardFullPr
         {/* Spy — Uprising only */}
         {playerState.spy !== undefined && (
           <CappedResourceRow
+            icon="🕵"
             label={t.dune.resources.spy}
             value={playerState.spy}
             max={MAX_SPY}
